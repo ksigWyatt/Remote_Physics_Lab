@@ -16,7 +16,7 @@
             <div class="column middle">
                 <div id="video-feed" class="video">
                     <iframe src="_" frameborder="2"></iframe>
-                    <h3 style="text-align: center;">Live Video</h3>
+                    <h3>Live Video</h3>
                 </div>
             </div>
             <div class="column right"></div>
@@ -31,14 +31,41 @@
             <div class="column left">
                 <h5>Voltage</h5>
 
-                <input id="volt-slider" type="range" min="0" max="250" step="10"/>
+                <div class="slidecontainer">
+                        <input id="volt-slider" type="range" min="0" max="250" step="5" class="slider">
+                        <p id="volt-value"></p>
+                </div>
             </div>
             <div class="column middle"></div>
             <div class="column right">
                 <h5>Current</h5>
 
-                <input id="curr-slider" type="range" min="0" max="250" step="10"/>
+                <div class="slidecontainer">
+                    <input id="curr-slider" type="range" min="0" max="5" step="0.25" class="slider">
+                    <p id="curr-value"></p>
+                </div>
             </div>
     </div>
+
+    <script>
+        // Voltage
+        var voltageSlider = document.getElementById("volt-slider");
+        var voltageValue = document.getElementById("volt-value");
+        voltageValue.innerHTML = voltageSlider.value;
+
+        var currentSlider = document.getElementById("curr-slider");
+        var currentValue = document.getElementById("curr-value");
+        currentValue.innerHTML = currentSlider.value;
+
+        // handle voltage moved
+        voltageSlider.oninput = function() {
+            voltageValue.innerHTML = this.value;
+        }
+
+        // handle current moved
+        currentSlider.oninput = function() {
+            currentValue.innerHTML = this.value;
+        }
+    </script>
 </body>
 </html>
