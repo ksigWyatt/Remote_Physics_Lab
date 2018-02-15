@@ -86,3 +86,10 @@ h5, h2, h3 {
 #curr-value, #volt-value {
     text-align: center;
 }
+
+.button {
+    background-color:  #5F879F;
+    color: white;
+    border: none;
+    
+}
