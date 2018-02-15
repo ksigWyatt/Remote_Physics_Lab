@@ -32,9 +32,11 @@
     <div id="controls" class="row">
         <h3>Controls</h3>
         <p id="alert-message"></p>
-        <button class="button">Reset</button>
-        <button class="button" disabled="disabled">Request Access</button>
-
+        <div class="centered">
+            <button class="button">Reset</button>
+            <button class="button">Request Access</button>
+        </div>
+        
         <div class="two-row">
             <div class="two-column">
                 <h5>Voltage</h5>
@@ -43,6 +45,15 @@
                     <input id="volt-slider" type="range" min="0" max="250" step="1" value="0" class="slider">
                     <p id="volt-value"></p>
                 </div>
+                <br />
+                <br />
+                <div class="centered">
+                    <div class="btn-group">
+                        <button class="button-stack">Positive</button>
+                        <button class="button-stack">Off</button>
+                        <button class="button-stack">Negative</button>
+                    </div>
+                </div>
             </div>
             <div class="two-column">
                 <h5>Current</h5>
@@ -50,6 +61,16 @@
                 <div class="slidecontainer">
                     <input id="curr-slider" type="range" min="0" value="0" max="5" step="0.1" class="slider">
                     <p id="curr-value"></p>
+                </div>
+                <br />
+                <br />
+                <div class="centered">
+                    <br>
+                    <div class="btn-group">
+                        <button class="button-stack">Clockwise</button>
+                        <button class="button-stack">Off</button>
+                        <button class="button-stack">Counter CW</button>
+                    </div>
                 </div>
             </div>
         </div>

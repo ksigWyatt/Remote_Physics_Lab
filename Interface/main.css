@@ -9,7 +9,7 @@ iframe {
 }
 
 body {
-    margin: 0;
+    margin: 10px;
 }
 
 .column {
@@ -48,7 +48,6 @@ body {
 }
 
 /* Creating custom sliders so that the UI looks nicer */
-
 .slidecontainer {
     width: 100%;
 }
@@ -115,4 +114,30 @@ h5, h2, h3 {
 .button:hover {
     opacity: 1;
     color: white;
+}
+
+/* Adding some custom bordered buttons for switch selections */
+.btn-group .button-stack {
+    background-color: #5F879F;
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    -webkit-transition-duration: 0.4s; /* Safari */
+    transition-duration: 0.4s;
+    cursor: pointer;
+    float: left;
+}
+
+.btn-group .button-stack:hover {
+    background-color: #004785;
+}
+
+.centered {
+    /*width: 60%; */
+    margin: auto;
+    background-color: black;
 }
