@@ -9,17 +9,19 @@
 </head>
 <body>
     <h2 style="text-align: center;">Remote Physics Lab</h2>
-    
+
+    <br />
+
     <!-- Video Feed -->
     <div class="row">
-            <div class="column left"></div>
-            <div class="column middle">
-                <div id="video-feed" class="video">
-                    <iframe src="_" frameborder="2"></iframe>
-                    <h3>Live Video</h3>
-                </div>
+        <div class="column left1"></div>
+        <div class="column middle1">
+            <div id="video-feed" class="video">
+                <iframe src="_" frameborder="2"></iframe>
+                <h3>Live Video</h3>
             </div>
-            <div class="column right"></div>
+        </div>
+        <div class="column right1"></div>
     </div>
 
     <br />
@@ -27,44 +29,51 @@
     <br />
 
     <!-- Controls -->
-    <div class="row">
-            <div class="column left">
+    <div id="controls" class="row">
+        <h3>Controls</h3>
+        <p id="alert-message"></p>
+        <button class="button">Reset</button>
+        <button class="button" disabled="disabled">Request Access</button>
+
+        <div class="two-row">
+            <div class="two-column">
                 <h5>Voltage</h5>
 
                 <div class="slidecontainer">
-                        <input id="volt-slider" type="range" min="0" max="250" step="5" class="slider">
-                        <p id="volt-value"></p>
+                    <input id="volt-slider" type="range" min="0" max="250" step="1" value="0" class="slider">
+                    <p id="volt-value"></p>
                 </div>
             </div>
-            <div class="column middle"></div>
-            <div class="column right">
+            <div class="two-column">
                 <h5>Current</h5>
 
                 <div class="slidecontainer">
-                    <input id="curr-slider" type="range" min="0" max="5" step="0.25" class="slider">
+                    <input id="curr-slider" type="range" min="0" value="0" max="5" step="0.1" class="slider">
                     <p id="curr-value"></p>
                 </div>
             </div>
+        </div>
     </div>
 
     <script>
         // Voltage
         var voltageSlider = document.getElementById("volt-slider");
         var voltageValue = document.getElementById("volt-value");
-        voltageValue.innerHTML = voltageSlider.value;
+        voltageValue.innerHTML = voltageSlider.value + " V";
 
+        // Current
         var currentSlider = document.getElementById("curr-slider");
         var currentValue = document.getElementById("curr-value");
-        currentValue.innerHTML = currentSlider.value;
+        currentValue.innerHTML = currentSlider.value + " A";
 
         // handle voltage moved
         voltageSlider.oninput = function() {
-            voltageValue.innerHTML = this.value;
+            voltageValue.innerHTML = this.value + " V";
         }
 
         // handle current moved
         currentSlider.oninput = function() {
-            currentValue.innerHTML = this.value;
+            currentValue.innerHTML = this.value + " A";
         }
     </script>
 </body>

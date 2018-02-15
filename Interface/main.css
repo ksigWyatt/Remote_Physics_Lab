@@ -1,6 +1,6 @@
 iframe {
     width: 100%;
-    height: 30%;
+    height: 35%;
 }
 
 * {
@@ -17,23 +17,32 @@ body {
     padding: 10px;
 }
 
+.two-column {
+    float: left;
+    width: 50%;
+    padding: 12px;
+}
+
 .row:after {
     content: "";
     display: table;
     clear: both;
 }
 
-.left, .right {
+.left1, .right1 {
     width: 20%;
 }
 
-.middle {
+.middle1 {
     width: 60%;    
 }
 
 /* Responsive layout - makes the columns stack on top of each other */
 @media (max-width: 600px) {
     .column {
+        width: 100%;
+    }
+    .two-column {
         width: 100%;
     }
 }
@@ -52,8 +61,8 @@ body {
     background: #d3d3d3;
     outline: none;
     opacity: 0.7;
-    -webkit-transition: .2s;
-    transition: opacity .2s;
+    -webkit-transition: 0.2s; /* Safari */
+    transition-duration: 0.2s;
 }
 
 .slider:hover {
@@ -87,9 +96,23 @@ h5, h2, h3 {
     text-align: center;
 }
 
+/* Adding some buttons in the same format as the slider */
 .button {
-    background-color:  #5F879F;
+    background: #004785;
+    opacity: 0.7;
+    font-size: 13px;
     color: white;
     border: none;
-    
+    text-align: center;
+    text-decoration: none;
+    -webkit-transition-duration: 0.4s; /* Safari */
+    transition-duration: 0.4s;
+    border-radius: 3px;
+    cursor: pointer;
+    padding: 10px 20px;
+}
+
+.button:hover {
+    opacity: 1;
+    color: white;
 }
