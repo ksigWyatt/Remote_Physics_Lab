@@ -87,11 +87,7 @@ body {
 }
 
 /* Global changes for the text attributes */
-h5, h2, h3 {
-    text-align: center;
-}
-
-#curr-value, #volt-value {
+h4, h2, h3, p {
     text-align: center;
 }
 
@@ -109,6 +105,8 @@ h5, h2, h3 {
     border-radius: 3px;
     cursor: pointer;
     padding: 10px 20px;
+    margin: 0 auto;
+    display: block;
 }
 
 .button:hover {
@@ -117,14 +115,13 @@ h5, h2, h3 {
 }
 
 /* Adding some custom bordered buttons for switch selections */
-.btn-group .button-stack {
+.btn-group .button-stack1 {
     background-color: #5F879F;
     border: none;
     color: white;
     padding: 10px 20px;
     text-align: center;
     text-decoration: none;
-    display: inline-block;
     font-size: 16px;
     -webkit-transition-duration: 0.4s; /* Safari */
     transition-duration: 0.4s;
@@ -132,12 +129,24 @@ h5, h2, h3 {
     float: left;
 }
 
-.btn-group .button-stack:hover {
+.btn-group .button-stack2 {
+    background-color: #5F879F;
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    font-size: 16px;
+    -webkit-transition-duration: 0.4s; /* Safari */
+    transition-duration: 0.4s;
+    cursor: pointer;
+    float: right;
+}
+
+.btn-group .button-stack1:hover {
     background-color: #004785;
 }
 
-.centered {
-    /*width: 60%; */
-    margin: auto;
-    background-color: black;
+.btn-group .button-stack2:hover {
+    background-color: #004785;
 }
