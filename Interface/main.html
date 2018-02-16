@@ -45,16 +45,26 @@
         
         <div class="two-row">
             <div class="two-column">
-                <h4>Voltage Control</h4>
+                <h4>Accelerating Voltage</h4>
 
                 <div class="slidecontainer">
-                    <input id="volt-slider" type="range" min="0" max="250" step="1" value="0" class="slider">
-                    <p id="volt-value"></p>
+                    <input id="volt-acc-slider" type="range" min="0" max="250" step="1" value="0" class="slider">
+                    <p id="volt-acc-value"></p>
+                </div>
+
+                <br />
+                <br />
+
+                <h4>Deflecting Voltage</h4>
+                <div class="slidecontainer">
+                    <input id="volt-def-slider" type="range" min="50" max="250" step="1" value="0" class="slider">
+                    <p id="volt-def-value"></p>
                     <p id="volt-selected-value">value of voltage button</p>
                 </div>
+
                 <br />
                 <br />
-                <h5>Deflecting Voltage</h5>
+
                 <div class="btn-group">
                     <button class="button-stack1">Positive</button>
                     <button class="button-stack1">Off</button>
@@ -65,7 +75,7 @@
                 <h4>Magnetizing Current</h4>
 
                 <div class="slidecontainer">
-                    <input id="curr-slider" type="range" min="0" value="0" max="3" step="0.1" class="slider">
+                    <input id="curr-slider" type="range" min="0" value="0" max="3" step="0.05" class="slider">
                     <p id="curr-value"></p>
                     <p id="curr-selected-value">value of current button</p>
                 </div>
@@ -82,19 +92,29 @@
     </div>
 
     <script>
-        // Voltage
-        var voltageSlider = document.getElementById("volt-slider");
-        var voltageValue = document.getElementById("volt-value");
-        voltageValue.innerHTML = voltageSlider.value + " V";
+        // Def. Voltage
+        var defVoltageSlider = document.getElementById("volt-def-slider");
+        var defVoltageValue = document.getElementById("volt-def-value");
+        defVoltageValue.innerHTML = defVoltageSlider.value + " V";
+
+        // Acc. Voltage
+        var accVoltageSlider = document.getElementById("volt-acc-slider");
+        var accVoltageValue = document.getElementById("volt-acc-value");
+        accVoltageValue.innerHTML = accVoltageSlider.value + " V";
 
         // Current
         var currentSlider = document.getElementById("curr-slider");
         var currentValue = document.getElementById("curr-value");
         currentValue.innerHTML = currentSlider.value + " A";
 
-        // handle voltage moved
-        voltageSlider.oninput = function() {
-            voltageValue.innerHTML = this.value + " V";
+        // handle def. voltage moved
+        defVoltageSlider.oninput = function() {
+            defVoltageValue.innerHTML = this.value + " V";
+        }
+
+         // handle acc. voltage moved
+         accVoltageSlider.oninput = function() {
+            accVoltageValue.innerHTML = this.value + " V";
         }
 
         // handle current moved
