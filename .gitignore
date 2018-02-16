@@ -1,4 +1,4 @@
-# Python GitHub ignores for C++ (Command Server)
+# GitHub ignores for Python (Command Server)
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -101,7 +101,7 @@ ENV/
 # mypy
 .mypy_cache/
 
-# C++ GitHub ignores for C++ (Pi)
+# GitHub ignores for C++ (Pi)
 # Prerequisites
 *.d
 
