@@ -8,7 +8,6 @@ class App extends Component {
       <div className="App">
       <h1>Remote Physics Lab</h1>
 
-      <button type="button" class="btn btn-primary btn-lg btn-block">Block level button</button>
       </div>
     );
   }
