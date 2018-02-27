@@ -1,0 +1,17 @@
+import React, { Component } from 'react';
+import logo from './logo.svg';
+import './App.css';
+
+class App extends Component {
+  render() {
+    return (
+      <div className="App">
+      <h1>Remote Physics Lab</h1>
+
+      <button type="button" class="btn btn-primary btn-lg btn-block">Block level button</button>
+      </div>
+    );
+  }
+}
+
+export default App;
