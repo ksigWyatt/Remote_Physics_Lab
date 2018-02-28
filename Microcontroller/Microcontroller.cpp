@@ -118,8 +118,6 @@ void Microcontroller::step(int voltage, Motor motor) {
 	magValue=voltage;
 	break;
 	}
-
-
 }
 
 void Microcontroller::writeSequence(const unsigned int sequenceNo) {

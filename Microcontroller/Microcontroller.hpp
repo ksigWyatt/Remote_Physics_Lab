@@ -8,6 +8,7 @@
  * This is for local invocation of RPI controlling methods.
  * RPC implementation for client-server interactions currently under development
  */
+
 class Microcontroller {
 public:
 
