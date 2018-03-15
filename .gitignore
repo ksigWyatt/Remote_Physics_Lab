@@ -144,4 +144,8 @@ ENV/
 # IDE Independent
 */.idea/
 */.vscode/
+
+# Others
 remote-physics-lab/README\.md
+**/node_modules/
+*.sqlite3
