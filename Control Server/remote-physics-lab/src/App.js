@@ -14,7 +14,7 @@ class App extends Component {
         
             {/* YouTube Player for the stream */}
             <div class="card mb-3">
-            <iframe  align="center" width="560" height="315" src="https://www.youtube.com/embed/rAlZRFZTwxM?rel=0&amp;controls=0&amp;showinfo=0" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+            <iframe width="560" height="315" src="https://www.youtube.com/embed/rAlZRFZTwxM?rel=0&amp;controls=0&amp;showinfo=0" frameBorder="0" allow="autoplay; encrypted-media"></iframe>
                 <div class="card-body">
                     <h5 class="card-title">Live Video</h5>
                     <br />
