@@ -28,6 +28,10 @@ class App extends Component {
                     <div class="card border-light">
                     <div class="card-body">
                         <h5 class="card-title">Deflecting Voltage</h5>
+                        <div class="slidecontainer">
+                            <input id="volt-def-slider" type="range" min="50" max="250" step="1" value="0" class="slider"></input>
+                            <p id="volt-def-value"></p>
+                        </div>
                         <div class="btn-group" role="group" aria-label="Basic example">
                             <button type="button" class="btn btn-secondary">Positive</button>
                             <button type="button" class="btn btn-secondary">Off</button>
@@ -42,7 +46,7 @@ class App extends Component {
                         <h5 class="card-title">Magnetizing Current</h5>
                         
                         <div class="slidecontainer">
-                            <input id="curr-slider" type="range" min="0" value="0" max="3" step="0.05" class="slider"></input>
+                            <input  id="curr-slider" type="range" min="0" value="0" max="3" step="0.05" class="slider"></input>
                             <p id="curr-value"></p>
                         </div>
                         <div class="btn-group" role="group" aria-label="Basic example">
@@ -54,7 +58,7 @@ class App extends Component {
                     </div>
                 </div>
             </div>
-
+            <br />
             <div class="row">
                 <div class="col-sm-6">
                     <div class="card border-light">

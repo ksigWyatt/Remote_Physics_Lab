@@ -18,3 +18,7 @@ The Software will be comprised of 3 major parts
 
 ### Other Sponsors
 - USAF Academy in Colorodo Springs, CO
+
+## Testing
+- Jest for JS & React
+- PyTest & DjangoTest
