@@ -1,0 +1,44 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Welcome to the Remote Physics Lab</title>
+    <link rel="stylesheet" href="main.css">
+    <link href="https://fonts.googleapis.com/css?family=Muli" rel="stylesheet">
+</head>
+<body>
+
+    <script>
+        // Def. Voltage
+        var defVoltageSlider = document.getElementById("volt-def-slider");
+        var defVoltageValue = document.getElementById("volt-def-value");
+        defVoltageValue.innerHTML = defVoltageSlider.value + " V";
+
+        // Acc. Voltage
+        var accVoltageSlider = document.getElementById("volt-acc-slider");
+        var accVoltageValue = document.getElementById("volt-acc-value");
+        accVoltageValue.innerHTML = accVoltageSlider.value + " V";
+
+        // Current
+        var currentSlider = document.getElementById("curr-slider");
+        var currentValue = document.getElementById("curr-value");
+        currentValue.innerHTML = currentSlider.value + " A";
+
+        // handle def. voltage moved
+        defVoltageSlider.oninput = function() {
+            defVoltageValue.innerHTML = this.value + " V";
+        }
+
+         // handle acc. voltage moved
+         accVoltageSlider.oninput = function() {
+            accVoltageValue.innerHTML = this.value + " V";
+        }
+
+        // handle current moved
+        currentSlider.oninput = function() {
+            currentValue.innerHTML = this.value + " A";
+        }
+    </script>
+</body>
+</html>
