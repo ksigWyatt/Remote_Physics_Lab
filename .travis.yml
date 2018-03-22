@@ -15,4 +15,4 @@ install:
   - pip install coreapi
 
 script:
-  - pytest
+  # - ./manage.py test
