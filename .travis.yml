@@ -5,7 +5,7 @@ python:
 virtualenv:
   system_site_packages: true
 install:
-  pip install -q Django==$1.11.11
+  pip install -q Django==1.11.11
   pip install coreapi
 script:
   - pytest
