@@ -6,5 +6,5 @@ from rest_framework.reverse import reverse
 @api_view(['GET'])
 def api_root(request, format=None):
     return Response({
-        'rpl': reverse('RPL:rpl-list', request=request, format=format)
+        'rpl': reverse('rpl:rpl-list', request=request, format=format),
     })
