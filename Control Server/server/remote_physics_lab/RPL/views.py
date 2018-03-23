@@ -20,7 +20,7 @@ class RplList(generics.ListCreateAPIView):
         serializer.save(user=self.request.user)
 
 
-class TodoDetail(generics.RetrieveUpdateDestroyAPIView):
+class RplDetail(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = RplSerializer
 
     def get_queryset(self):
