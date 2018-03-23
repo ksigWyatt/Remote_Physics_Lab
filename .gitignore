@@ -151,3 +151,4 @@ remote-physics-lab/README\.md
 *.sqlite3
 
 # For the time being
+.travis.yml
