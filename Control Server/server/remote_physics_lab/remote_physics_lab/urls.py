@@ -22,6 +22,8 @@ from remote_physics_lab import views
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^docs/', include_docs_urls(title='RPL API', description='RESTful API for RPL')),
+    url(r'^current/', include('current.urls')),
+    url(r'^voltage/', include('voltage.urls')),
     url(r'^$', views.api_root),
     url(r'^', include('RPL.urls', namespace='rpl')),
 ]
