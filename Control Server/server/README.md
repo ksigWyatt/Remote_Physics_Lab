@@ -14,5 +14,7 @@ We are using Django `1.11.11`. The current version of Django uses several differ
 - Power -- POST (0, 1)
 
 ## Pip Dependencies
+*Make sure to run `python -m pip install --upgrade pip` to ensure you have the latest version of pip.*
 - [django](https://www.djangoproject.com/)
 - [djangorestframework](http://www.django-rest-framework.org/)
+- coreapi -- *Must be installed for schema support*
