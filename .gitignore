@@ -149,6 +149,7 @@ ENV/
 remote-physics-lab/README\.md
 **/node_modules/
 *.sqlite3
+**/migrations/
 
 # For the time being
 .travis.yml
