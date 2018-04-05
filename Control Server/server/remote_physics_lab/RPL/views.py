@@ -12,15 +12,19 @@ from RPL.serializers import RplSerializer
 # this needs a lot of work from the looks of it because the view doesn't
 # have user or rpl as a thing
 
-class RplList(generics.ListCreateAPIView):
-    queryset = Rpl.objects.all()
-    serializer_class = RplSerializer
+def index(request):
+    return HttpResponse("Hello, world. You're at the RPL index.")
 
-    def perform_create(self, serializer):
-        serializer.save(rpl=self.request.rpl)
 
-class RplDetail(generics.RetrieveUpdateDestroyAPIView):
-    serializer_class = RplSerializer
-
-    def get_queryset(self):
-        return Rpl.objects.all().filter(rpl=self.request.rpl)
+# class RplList(generics.ListCreateAPIView):
+#     queryset = Rpl.objects.all()
+#     serializer_class = RplSerializer
+#
+#     def perform_create(self, serializer):
+#         serializer.save(rpl=self.request.rpl)
+#
+# class RplDetail(generics.RetrieveUpdateDestroyAPIView):
+#     serializer_class = RplSerializer
+#
+#     def get_queryset(self):
+#         return Rpl.objects.all().filter(rpl=self.request.rpl)
