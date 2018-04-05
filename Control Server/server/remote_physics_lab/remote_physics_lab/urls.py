@@ -23,5 +23,5 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^docs/', include_docs_urls(title='RPL API', description='RESTful API for RPL')),
     url(r'^$', views.api_root),
-    url(r'^rpl/', include('RPL.urls')),
+    url(r'^', include('RPL.urls')),
 ]
