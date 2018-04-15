@@ -13,3 +13,8 @@ STYLE_CHOICES = sorted((item, item) for item in get_all_styles())
 class Rpl(models.Model):
     variables = models.CharField(max_length=30, blank=True)
     values = models.IntegerField()
+
+
+class Users(models.Model):
+    ip = models.CharField(max_length=30, blank=True)
+    place = models.IntegerField()
