@@ -19,7 +19,7 @@ class RplSerializer(serializers.Serializer):
         """
         Update and return an existing `Snippet` instance, given the validated data.
         """
-        instance.variables = validated_data.get('variables', instance.variables)
+        # instance.variables = validated_data.get('variables', instance.variables)
         instance.style = validated_data.get('style', instance.style)
         instance.save()
         return instance

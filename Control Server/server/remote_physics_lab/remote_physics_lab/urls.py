@@ -16,12 +16,18 @@ Including another URLconf
 from django.conf.urls import url, include
 from django.contrib import admin
 from rest_framework.documentation import include_docs_urls
-
 from remote_physics_lab import views
+from RPL.resources import RplResource, UsersResource
+
+
+rpl_resource = RplResource()
+users_resource = UsersResource()
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^docs/', include_docs_urls(title='RPL API', description='RESTful API for RPL')),
     url(r'^$', views.api_root),
     url(r'^', include('RPL.urls')),
+    url(r'^api/', include(rpl_resource.urls)),
+    url(r'^api/', include(users_resource.urls))
 ]
