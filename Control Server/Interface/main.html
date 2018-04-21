@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="main.css">
     <link href="https://fonts.googleapis.com/css?family=Muli" rel="stylesheet">
 </head>
-<body>
+<body onload="init()">
     <h2>Remote Physics Lab</h2>
 
     <br />
@@ -32,7 +32,7 @@
     <div id="controls" class="row">
         <hr>
         <br />
-        <button class="button">Request Access</button>
+        <button id="request-access" class="button">Request Access</button>
         <p id="queue">x students ahead of you</p>
 
         <br />
@@ -114,6 +114,7 @@
         currentValue.innerHTML = currentSlider.value + " A";
 
         // Buttons
+        var requestAccess = document.getElementById("request-access");
         var reset = document.getElementById("reset-button");
         var dvPos = document.getElementById("dv-pos");
         var dvOff = document.getElementById("dv-off");
@@ -149,15 +150,18 @@
             accVoltageValue.innerHTML = 0 + " V";
             currentSlider.value = 0;
             currentValue.innerHTML = 0 + " A";
-            // Update API to reflect resets
 
+            // Update API to reflect resets
         }
 
         // Sending API PUTS
         defVoltageSlider.onchange = function() {
+
             // 
             beginTimer()
             if (this.value <= 250 && this.value >= 50 && elapsedTime >= 199) {
+
+
                 console.log("Sending " + this.value + " to varables/DefVolt/ via PUT." );
             }
             else if (elapsedTime < 199) {
@@ -171,6 +175,7 @@
         }
 
          accVoltageSlider.onchange = function() {
+
             //
             beginTimer()
 
@@ -190,6 +195,7 @@
         }
         
         currentSlider.onchange = function() {
+
             // 
             beginTimer()
 
@@ -210,7 +216,7 @@
         function init() {
 
             // load number of users at init
-
+            console.log("GET all users via queue/ " );
         }
 
         function beginTimer() {
