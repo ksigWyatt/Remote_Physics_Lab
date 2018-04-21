@@ -27,4 +27,4 @@ Maps to *ip*(string) and *place*(int)
 ## Pip Dependencies
 *Make sure to run `python -m pip install --upgrade pip` to ensure you have the latest version of pip. Alternitavely use the quickstart files in the dependencies folder. There are install scripts for all dependencies inside these scripts for Windows CMD and macOS Terminal. Please also ensure that you have Python installed on your machine, or else these scripts will fail.*
 - [django](https://www.djangoproject.com/)
-- TastyPie
+- [TastyPie](https://django-tastypie.readthedocs.io/en/latest/)
