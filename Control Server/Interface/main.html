@@ -216,7 +216,24 @@
         function init() {
 
             // load number of users at init
-            console.log("GET all users via queue/ " );
+            var request = createRequest("http://10.0.0.118:5000/api/queue/");
+        }
+
+        function createRequest(url) {
+
+            fetch(url, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Access-Control-Allow-Origin" : "*",
+                    "Access-Control-Allow-Headers": "*"
+                },
+                credentials: "same-origin"
+            }).then(function(data) {
+                console.log(data);
+            }).catch(function(error) {
+                // If there is any error you will catch them here
+            });   
         }
 
         function beginTimer() {
