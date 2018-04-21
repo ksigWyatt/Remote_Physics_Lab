@@ -17,7 +17,7 @@
         <div class="column left1"></div>
         <div class="column middle1">
             <div id="video-feed" class="video">
-                <iframe src="_" frameborder="2"></iframe>
+                <p><iframe width="1024" height="576" src="https://www.youtube.com/embed/UFYopo_MlJc?&amp;showinfo=0" frameBorder="0" allow="autoplay; encrypted-media"></iframe></p>
                 <h3>Live Video</h3>
             </div>
         </div>
@@ -30,6 +30,8 @@
 
     <!-- Controls -->
     <div id="controls" class="row">
+        <hr>
+        <br />
         <button class="button">Request Access</button>
         <p id="queue">x students ahead of you</p>
 
@@ -39,7 +41,7 @@
         <h3>Controls</h3>
         <p id="alert-message"></p>
         <div class="centered">
-            <button class="button">Reset</button>
+            <button id="reset-button" class="button">Reset</button>
             
         </div>
         
@@ -66,9 +68,9 @@
                 <br />
 
                 <div class="btn-group">
-                    <button class="button-stack1">Positive</button>
-                    <button class="button-stack1">Off</button>
-                    <button class="button-stack1">Negative</button>
+                    <button id="dv-pos" class="button-stack1">Positive</button>
+                    <button id="dv-off" class="button-stack1">Off</button>
+                    <button id="dv-neg" class="button-stack1">Negative</button>
                 </div>
             </div>
             <div class="two-column">
@@ -83,15 +85,19 @@
                 <br />
                 <h5 style="text-align: right;">Magnetic Arc</h5>
                 <div class="btn-group">
-                    <button class="button-stack2">Clockwise</button>
-                    <button class="button-stack2">Off</button>
-                    <button class="button-stack2">Counter CW</button>
+                    <button id="mag-cw" class="button-stack2">Clockwise</button>
+                    <button id="mag-off" class="button-stack2">Off</button>
+                    <button id="mag-ccw" class="button-stack2">Counter CW</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
+        //INIT
+        var startTime, interval, elapsedTime;
+        var failedCount = 0;
+
         // Def. Voltage
         var defVoltageSlider = document.getElementById("volt-def-slider");
         var defVoltageValue = document.getElementById("volt-def-value");
@@ -107,23 +113,126 @@
         var currentValue = document.getElementById("curr-value");
         currentValue.innerHTML = currentSlider.value + " A";
 
-        // handle def. voltage moved
+        // Buttons
+        var reset = document.getElementById("reset-button");
+        var dvPos = document.getElementById("dv-pos");
+        var dvOff = document.getElementById("dv-off");
+        var dvNeg = document.getElementById("dv-neg");
+        var magCW = document.getElementById("mag-cw");
+        var magOff = document.getElementById("mag-off");
+        var magCCW = document.getElementById("mag-ccw");
+
+        // Labels
+        var queueText = document.getElementById("queue");
+        
+
+        // SLIDERS MOVED
+        // def. voltage
         defVoltageSlider.oninput = function() {
             defVoltageValue.innerHTML = this.value + " V";
         }
 
-         // handle acc. voltage moved
+         // acc. voltage
          accVoltageSlider.oninput = function() {
             accVoltageValue.innerHTML = this.value + " V";
         }
 
-        // handle current moved
+        // current moved
         currentSlider.oninput = function() {
             currentValue.innerHTML = this.value + " A";
         }
 
+        reset.onclick = function() {
+            defVoltageSlider.value = 50;
+            defVoltageValue.innerHTML = 50 + " V";
+            accVoltageSlider.value = 0;
+            accVoltageValue.innerHTML = 0 + " V";
+            currentSlider.value = 0;
+            currentValue.innerHTML = 0 + " A";
+            // Update API to reflect resets
 
-        // Sending API PUTS using .onChanged()
+        }
+
+        // Sending API PUTS
+        defVoltageSlider.onchange = function() {
+            // 
+            beginTimer()
+            if (this.value <= 250 && this.value >= 50 && elapsedTime >= 199) {
+                console.log("Sending " + this.value + " to varables/DefVolt/ via PUT." );
+            }
+            else if (elapsedTime < 199) {
+                failedCount++;
+            }
+
+            if (failedCount > 5) {
+                    alert("Please allow time for requests to be sent. Making changes rapidly could damage the device.");
+                    failedCount = 0;
+            }
+        }
+
+         accVoltageSlider.onchange = function() {
+            //
+            beginTimer()
+
+            if (this.value <= 250 && this.value >= 0 && elapsedTime >= 199) {
+
+                console.log("Sending " + this.value + " to varables/AccVolt/ via PUT." );
+            }
+            else if (elapsedTime < 199) {
+                failedCount++;
+
+                if (failedCount > 5) {
+                    alert("Please allow time for requests to be sent. Making changes rapidly could damage the device.");
+                    failedCount = 0;
+                }
+            }
+            
+        }
+        
+        currentSlider.onchange = function() {
+            // 
+            beginTimer()
+
+            if (this.value <= 3 && this.value >= 0 && elapsedTime >= 199) {
+                console.log("Sending " + this.value + " to varables/Current/ via PUT." );
+            }
+            else if (elapsedTime < 199) {
+                failedCount++;
+
+                if (failedCount > 5) {
+                    alert("Please allow time for requests to be sent. Making changes rapidly could damage the device.");
+                    failedCount = 0;
+                }
+            }
+            
+        }
+        
+        function init() {
+
+            // load number of users at init
+
+        }
+
+        function beginTimer() {
+            startTime = Date.now();
+            interval = setInterval(function(){
+                updateDisplay(Date.now() - startTime);
+            });
+        }
+
+        function updateDisplay(currentTime) {
+
+            elapsedTime = currentTime;
+
+            // Limit the user to send requests only every 200 ms w/ 3ms buffer
+            if (currentTime > 202) {
+                stopTimer();
+            }
+        }
+
+        function stopTimer() {
+            clearInterval(interval);
+        }
     </script>
 </body>
 </html>
