@@ -5,6 +5,7 @@ from django.db import models
 
 
 class Rpl(models.Model):
+    id = models.IntegerField(primary_key=True)
     variables = models.CharField(max_length=30, null=True)
     values = models.IntegerField(null=True)
 
@@ -12,6 +13,7 @@ class Rpl(models.Model):
         return '%s %s' % (self.variables, self.values)
 
 class Users(models.Model):
+    id = models.IntegerField(primary_key=True)
     ip = models.CharField(max_length=15, null=True)
     place = models.IntegerField(blank=True, null=True, unique=True)
 
