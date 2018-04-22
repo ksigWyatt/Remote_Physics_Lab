@@ -10,7 +10,7 @@
 </head>
 <body onload="init()">
     <h2>Remote Physics Lab</h2>
-
+    
     <br />
 
     <!-- Video Feed -->
@@ -183,6 +183,62 @@
             currentValue.innerHTML = this.value + " A";
         }
 
+        // Make API calls for sliders
+        defVoltageSlider.onchange = function() {
+
+            beginTimer()
+            if (this.value <= 250 && this.value >= 50 && elapsedTime >= 199) {
+
+
+                console.log("Sending " + this.value + " to varables/DefVolt/ via PUT." );
+            }
+            else if (elapsedTime < 199) {
+                failedCount++;
+            }
+
+            if (failedCount > 5) {
+                    alert("Please allow time for requests to be sent. Making changes rapidly could damage the device.");
+                    failedCount = 0;
+            }
+        }
+
+        accVoltageSlider.onchange = function() {
+
+            beginTimer()
+
+            if (this.value <= 250 && this.value >= 0 && elapsedTime >= 199) {
+
+                console.log("Sending " + this.value + " to varables/AccVolt/ via PUT." );
+            }
+            else if (elapsedTime < 199) {
+                failedCount++;
+
+                if (failedCount > 5) {
+                    alert("Please allow time for requests to be sent. Making changes rapidly could damage the device.");
+                    failedCount = 0;
+                }
+            }
+        }
+
+        currentSlider.onchange = function() {
+
+            beginTimer()
+
+            if (this.value <= 3 && this.value >= 0 && elapsedTime >= 199) {
+                console.log("Sending " + this.value + " to varables/Current/ via PUT." );
+            }
+            else if (elapsedTime < 199) {
+                failedCount++;
+
+                if (failedCount > 5) {
+                    alert("Please allow time for requests to be sent. Making changes rapidly could damage the device.");
+                    failedCount = 0;
+                }
+            }
+        }
+
+        // CLICKED BUTTONS
+
         reset.onclick = function() {
             defVoltageSlider.value = 50;
             defVoltageValue.innerHTML = 50 + " V";
@@ -210,61 +266,7 @@
             }
         }
 
-        // API PUTS for sliders
-        defVoltageSlider.onchange = function() {
-
-            beginTimer()
-            if (this.value <= 250 && this.value >= 50 && elapsedTime >= 199) {
-
-
-                console.log("Sending " + this.value + " to varables/DefVolt/ via PUT." );
-            }
-            else if (elapsedTime < 199) {
-                failedCount++;
-            }
-
-            if (failedCount > 5) {
-                    alert("Please allow time for requests to be sent. Making changes rapidly could damage the device.");
-                    failedCount = 0;
-            }
-        }
-
-         accVoltageSlider.onchange = function() {
-
-            beginTimer()
-
-            if (this.value <= 250 && this.value >= 0 && elapsedTime >= 199) {
-
-                console.log("Sending " + this.value + " to varables/AccVolt/ via PUT." );
-            }
-            else if (elapsedTime < 199) {
-                failedCount++;
-
-                if (failedCount > 5) {
-                    alert("Please allow time for requests to be sent. Making changes rapidly could damage the device.");
-                    failedCount = 0;
-                }
-            }
-        }
-        
-        currentSlider.onchange = function() {
-
-            beginTimer()
-
-            if (this.value <= 3 && this.value >= 0 && elapsedTime >= 199) {
-                console.log("Sending " + this.value + " to varables/Current/ via PUT." );
-            }
-            else if (elapsedTime < 199) {
-                failedCount++;
-
-                if (failedCount > 5) {
-                    alert("Please allow time for requests to be sent. Making changes rapidly could damage the device.");
-                    failedCount = 0;
-                }
-            }
-        }
-
-        // Functions & API Calls
+        // FUNCS & API
 
         function addUserToQueue() {
 
