@@ -6,10 +6,100 @@
     <title>Welcome to the Remote Physics Lab</title>
     <link rel="stylesheet" href="main.css">
     <link href="https://fonts.googleapis.com/css?family=Muli" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.10/css/all.css" integrity="sha384-+d0P83n9kaQMCwj8F4RJB66tzIwOKmrdb46+porD/OvrJ+37WqIM7UoBtwHO6Nlg" crossorigin="anonymous">
 </head>
-<body>
+<body onload="init()">
+    <h2>Remote Physics Lab</h2>
+    
+    <br />
+
+    <!-- Video Feed -->
+    <div class="row">
+        <div class="column left1"></div>
+        <div class="column middle1">
+            <div id="video-feed" class="video">
+                <p><iframe width="1024" height="576" src="https://www.youtube.com/embed/UFYopo_MlJc?&amp;showinfo=0" frameBorder="0" allow="autoplay; encrypted-media"></iframe></p>
+                <h3>Live Video</h3>
+            </div>
+        </div>
+        <div class="column right1"></div>
+    </div>
+
+    <br />
+    <br />
+    <br />
+
+    <!-- Controls -->
+    <div id="controls" class="row">
+        <hr>
+        <br />
+        <button id="request-access" class="button">Request Access</button>
+        <p id="queue"></p>
+
+        <br />
+        <br />
+
+        <h3>Controls</h3>
+        <p id="alert-message"></p>
+        <div class="centered">
+            <button id="reset-button" class="button">Reset</button>
+            
+        </div>
+        
+        <div class="two-row">
+            <div class="two-column">
+                <h4>Accelerating Voltage</h4>
+
+                <div class="slidecontainer">
+                    <input id="volt-acc-slider" type="range" min="0" max="250" step="1" value="0" class="slider">
+                    <p id="volt-acc-value"></p>
+                </div>
+
+                <br />
+                <br />
+
+                <h4>Deflecting Voltage</h4>
+                <div class="slidecontainer">
+                    <input id="volt-def-slider" type="range" min="50" max="250" step="1" value="0" class="slider">
+                    <p id="volt-def-value"></p>
+                    <p id="volt-selected-value">value of voltage button</p>
+                </div>
+
+                <br />
+                <br />
+
+                <div class="btn-group">
+                    <button id="dv-pos" class="button-stack1">Positive</button>
+                    <button id="dv-off" class="button-stack1">Off</button>
+                    <button id="dv-neg" class="button-stack1">Negative</button>
+                </div>
+            </div>
+            <div class="two-column">
+                <h4>Magnetizing Current</h4>
+
+                <div class="slidecontainer">
+                    <input id="curr-slider" type="range" min="0" value="0" max="3" step="0.05" class="slider">
+                    <p id="curr-value"></p>
+                    <p id="curr-selected-value">value of current button</p>
+                </div>
+                <br />
+                <br />
+                <h5 style="text-align: right;">Magnetic Arc</h5>
+                <div class="btn-group">
+                    <button id="mag-cw" class="button-stack2">Clockwise</button>
+                    <button id="mag-off" class="button-stack2">Off</button>
+                    <button id="mag-ccw" class="button-stack2">Counter CW</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script>
+        //INIT
+        var startTime, interval, elapsedTime, count;
+        var failedCount = 0;
+        var waiting = false;
+
         // Def. Voltage
         var defVoltageSlider = document.getElementById("volt-def-slider");
         var defVoltageValue = document.getElementById("volt-def-value");
@@ -25,19 +115,204 @@
         var currentValue = document.getElementById("curr-value");
         currentValue.innerHTML = currentSlider.value + " A";
 
-        // handle def. voltage moved
+        // Buttons
+        var requestAccess = document.getElementById("request-access");
+        var reset = document.getElementById("reset-button");
+        var dvPos = document.getElementById("dv-pos");
+        var dvOff = document.getElementById("dv-off");
+        var dvNeg = document.getElementById("dv-neg");
+        var magCW = document.getElementById("mag-cw");
+        var magOff = document.getElementById("mag-off");
+        var magCCW = document.getElementById("mag-ccw");
+
+        // Labels
+        var queueText = document.getElementById("queue");
+        
+
+        // MARK: INIT
+        function init() {
+
+            // load number of users onload
+            getUsersInQueue("http://127.0.0.1:5000/api/queue/", "init");
+        }
+
+        function getUsersInQueue(url, sender) {
+            
+            count = 0;
+            fetch(url, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                credentials: "same-origin"
+            }).then(function(response) { return response.json(); })
+              .then(function(data) {
+                  
+                for (var i = 0; i < data.objects.length; i++) {
+                    // capture other users information via
+                    // console.log(data.objects[i]);
+                    count++;
+                }
+
+                if (sender == "request"){
+                    afterRequestedCount(count);
+                }
+                else {
+                    updateQueueField(count);
+                }
+
+            }).catch(function(error) {
+                alert("An error occurred");
+                console.log(error);
+            });
+        }
+
+        // SLIDERS
+        // def. voltage
         defVoltageSlider.oninput = function() {
             defVoltageValue.innerHTML = this.value + " V";
         }
 
-         // handle acc. voltage moved
+         // acc. voltage
          accVoltageSlider.oninput = function() {
             accVoltageValue.innerHTML = this.value + " V";
         }
 
-        // handle current moved
+        // current moved
         currentSlider.oninput = function() {
             currentValue.innerHTML = this.value + " A";
+        }
+
+        // Make API calls for sliders
+        defVoltageSlider.onchange = function() {
+
+            beginTimer()
+            if (this.value <= 250 && this.value >= 50 && elapsedTime >= 199) {
+
+
+                console.log("Sending " + this.value + " to varables/DefVolt/ via PUT." );
+            }
+            else if (elapsedTime < 199) {
+                failedCount++;
+            }
+
+            if (failedCount > 5) {
+                    alert("Please allow time for requests to be sent. Making changes rapidly could damage the device.");
+                    failedCount = 0;
+            }
+        }
+
+        accVoltageSlider.onchange = function() {
+
+            beginTimer()
+
+            if (this.value <= 250 && this.value >= 0 && elapsedTime >= 199) {
+
+                console.log("Sending " + this.value + " to varables/AccVolt/ via PUT." );
+            }
+            else if (elapsedTime < 199) {
+                failedCount++;
+
+                if (failedCount > 5) {
+                    alert("Please allow time for requests to be sent. Making changes rapidly could damage the device.");
+                    failedCount = 0;
+                }
+            }
+        }
+
+        currentSlider.onchange = function() {
+
+            beginTimer()
+
+            if (this.value <= 3 && this.value >= 0 && elapsedTime >= 199) {
+                console.log("Sending " + this.value + " to varables/Current/ via PUT." );
+            }
+            else if (elapsedTime < 199) {
+                failedCount++;
+
+                if (failedCount > 5) {
+                    alert("Please allow time for requests to be sent. Making changes rapidly could damage the device.");
+                    failedCount = 0;
+                }
+            }
+        }
+
+        // CLICKED BUTTONS
+
+        reset.onclick = function() {
+            defVoltageSlider.value = 50;
+            defVoltageValue.innerHTML = 50 + " V";
+            accVoltageSlider.value = 0;
+            accVoltageValue.innerHTML = 0 + " V";
+            currentSlider.value = 0;
+            currentValue.innerHTML = 0 + " A";
+
+            // Update API to reflect resets
+        }
+        
+        requestAccess.onclick = function() {
+
+            if (!waiting) {
+                addUserToQueue();
+
+                // wait 300ms for the post to go through
+                setTimeout(function () {
+                    getUsersInQueue("http://127.0.0.1:5000/api/queue/", "request");
+                }, 300);
+
+            }
+            else {
+                alert("You are already in the queue");
+            }
+        }
+
+        // FUNCS & API
+
+        function addUserToQueue() {
+
+            waiting = true;
+
+            // get current user session and send that to the api
+            count++;
+
+            // wait 30 seconds and see if it's your turn
+            setTimeout(function () {
+                // getUsersInQueue("http://127.0.0.1:5000/api/queue/", "request");
+            }, 30000);
+        }
+
+        function afterRequestedCount(num) {
+            queueText.innerHTML = "You are currently " + num + " in the queue.";
+        }
+
+        function updateQueueField(num) {
+
+            if (num > 0)
+                queueText.innerHTML = num + " students waiting";
+
+            else if (num == 0)
+                queueText.innerHTML = " No students waiting";
+        }
+
+        function beginTimer() {
+            startTime = Date.now();
+            interval = setInterval(function(){
+                updateDisplay(Date.now() - startTime);
+            });
+        }
+
+        function updateDisplay(currentTime) {
+
+            elapsedTime = currentTime;
+
+            // Limit the user to send requests only every 200 ms w/ 3ms buffer
+            if (currentTime > 202) {
+                stopTimer();
+            }
+        }
+
+        function stopTimer() {
+            clearInterval(interval);
         }
     </script>
 </body>

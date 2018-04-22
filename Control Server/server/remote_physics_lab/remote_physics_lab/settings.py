@@ -25,7 +25,7 @@ SECRET_KEY = '1+d!!wljonzk4ytc1zpvz&xqt3=@6+ut7s%%6sjhv2bc)mbfbc'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"] # anyone in the world
 
 
 # Application definition
@@ -37,7 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'RPL'
+    'RPL',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -48,7 +49,10 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
+
+CORS_ORIGIN_ALLOW_ALL = True # This is probably really unsafe and should be disabled in PROD
 
 ROOT_URLCONF = 'remote_physics_lab.urls'
 
