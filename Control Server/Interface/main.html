@@ -95,8 +95,9 @@
 
     <script>
         //INIT
-        var startTime, interval, elapsedTime;
+        var startTime, interval, elapsedTime, count;
         var failedCount = 0;
+        var waiting = false;
 
         // Def. Voltage
         var defVoltageSlider = document.getElementById("volt-def-slider");
@@ -127,7 +128,45 @@
         var queueText = document.getElementById("queue");
         
 
-        // SLIDERS MOVED
+        // MARK: INIT
+        function init() {
+
+            // load number of users onload
+            getUsersInQueue("http://127.0.0.1:5000/api/queue/", "init");
+        }
+
+        function getUsersInQueue(url, sender) {
+            
+            count = 0;
+            fetch(url, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                credentials: "same-origin"
+            }).then(function(response) { return response.json(); })
+              .then(function(data) {
+                  
+                for (var i = 0; i < data.objects.length; i++) {
+                    // capture other users information via
+                    // console.log(data.objects[i]);
+                    count++;
+                }
+
+                if (sender == "request"){
+                    afterRequestedCount(count);
+                }
+                else {
+                    updateQueueField(count);
+                }
+
+            }).catch(function(error) {
+                alert("An error occurred");
+                console.log(error);
+            });
+        }
+
+        // SLIDERS
         // def. voltage
         defVoltageSlider.oninput = function() {
             defVoltageValue.innerHTML = this.value + " V";
@@ -153,11 +192,26 @@
 
             // Update API to reflect resets
         }
+        
+        requestAccess.onclick = function() {
 
-        // Sending API PUTS
+            if (!waiting) {
+                addUserToQueue();
+
+                // wait 300ms for the post to go through
+                setTimeout(function () {
+                    getUsersInQueue("http://127.0.0.1:5000/api/queue/", "request");
+                }, 300);
+
+            }
+            else {
+                alert("You are already in the queue");
+            }
+        }
+
+        // API PUTS for sliders
         defVoltageSlider.onchange = function() {
 
-            // 
             beginTimer()
             if (this.value <= 250 && this.value >= 50 && elapsedTime >= 199) {
 
@@ -176,7 +230,6 @@
 
          accVoltageSlider.onchange = function() {
 
-            //
             beginTimer()
 
             if (this.value <= 250 && this.value >= 0 && elapsedTime >= 199) {
@@ -191,12 +244,10 @@
                     failedCount = 0;
                 }
             }
-            
         }
         
         currentSlider.onchange = function() {
 
-            // 
             beginTimer()
 
             if (this.value <= 3 && this.value >= 0 && elapsedTime >= 199) {
@@ -210,41 +261,34 @@
                     failedCount = 0;
                 }
             }
-            
-        }
-        
-        function init() {
-
-            // load number of users at init
-            var request = createRequest("http://127.0.0.1:5000/api/queue/");
-            
         }
 
-        function createRequest(url) {
+        // Functions & API Calls
 
-            var count = 0;
-            fetch(url, {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                credentials: "same-origin"
-            }).then(function(response) { return response.json(); })
-              .then(function(data) {
+        function addUserToQueue() {
 
-                console.log(data);
-                for (var i = 0; i < data.objects.length; i++) {
-                    // capture other users information via
-                    // console.log(data.objects[i]);
-                    count++;
-                }
+            waiting = true;
 
-                queueText.innerHTML = count + " students waiting";
-                
-            }).catch(function(error) {
-                // If there is any error you will catch them here
-            });   
+            // get current user session and send that to the api
+            count++;
 
+            // wait 30 seconds and see if it's your turn
+            setTimeout(function () {
+                // getUsersInQueue("http://127.0.0.1:5000/api/queue/", "request");
+            }, 30000);
+        }
+
+        function afterRequestedCount(num) {
+            queueText.innerHTML = "You are currently " + num + " in the queue.";
+        }
+
+        function updateQueueField(num) {
+
+            if (num > 0)
+                queueText.innerHTML = num + " students waiting";
+
+            else if (num == 0)
+                queueText.innerHTML = " No students waiting";
         }
 
         function beginTimer() {
