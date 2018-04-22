@@ -52,7 +52,7 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
 ]
 
-CORS_ORIGIN_ALLOW_ALL = True
+CORS_ORIGIN_ALLOW_ALL = True # This is probably really unsafe and should be disabled in PROD
 
 ROOT_URLCONF = 'remote_physics_lab.urls'
 
