@@ -33,7 +33,7 @@
         <hr>
         <br />
         <button id="request-access" class="button">Request Access</button>
-        <p id="queue">x students ahead of you</p>
+        <p id="queue"></p>
 
         <br />
         <br />
@@ -216,25 +216,35 @@
         function init() {
 
             // load number of users at init
-            var request = createRequest("http://10.0.0.118:5000/api/queue/");
+            var request = createRequest("http://127.0.0.1:5000/api/queue/");
+            
         }
 
         function createRequest(url) {
 
+            var count = 0;
             fetch(url, {
                 method: "GET",
                 headers: {
-                    "Content-Type": "application/json",
-                    "Access-Control-Allow-Origin" : "*",
-                    "Access-Control-Allow-Headers": "*",
-                    "Host": "10.0.0.118:5000"
+                    "Content-Type": "application/json"
                 },
                 credentials: "same-origin"
-            }).then(function(data) {
+            }).then(function(response) { return response.json(); })
+              .then(function(data) {
+
                 console.log(data);
+                for (var i = 0; i < data.objects.length; i++) {
+                    // capture other users information via
+                    // console.log(data.objects[i]);
+                    count++;
+                }
+
+                queueText.innerHTML = count + " students waiting";
+                
             }).catch(function(error) {
                 // If there is any error you will catch them here
             });   
+
         }
 
         function beginTimer() {
