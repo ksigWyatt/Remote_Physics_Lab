@@ -85,10 +85,10 @@
                 <br />
                 <br />
                 <h5 style="text-align: right;">Magnetic Arc</h5>
-                <div class="btn-group">
-                    <button id="mag-cw" class="button-stack2">Clockwise</button>
-                    <button id="mag-off" class="button-stack2">Off</button>
+                <div class="btn-group">                
                     <button id="mag-ccw" class="button-stack2">Counter CW</button>
+                    <button id="mag-off" class="button-stack2">Off</button>
+                    <button id="mag-cw" class="button-stack2">Clockwise</button>
                 </div>
             </div>
         </div>
@@ -97,7 +97,7 @@
     <script>
         //INIT
         var startTime, interval, elapsedTime, count;
-        var failedCount = 0;
+        var failedCount, dvValue, maValue = 0;
         var waiting, loading, beenReset = false;
 
         // Def. Voltage
@@ -167,7 +167,6 @@
             }
             else {
                 if (this.value <= 250 && this.value >= 50) {
-
                     sendPUTforVars(this.value, "deflectingv");
                 }
             }
@@ -186,8 +185,7 @@
                 }
             }
             else {
-                if (this.value <= 250 && this.value >= 50) {
-
+                if (this.value <= 250 && this.value >= 0) {
                     sendPUTforVars(this.value, "accelv");
                 }
             }
@@ -216,7 +214,7 @@
 
         reset.onclick = function() {
 
-            if (defVoltageSlider.value != 50 && accVoltageSlider.value != 0 && currentSlider != 0) {
+            if (defVoltageSlider.value != 50 || accVoltageSlider.value != 0 || currentSlider != 0) {
                 defVoltageSlider.value = 50;
                 defVoltageValue.innerHTML = 50 + " V";
                 accVoltageSlider.value = 0;
@@ -231,6 +229,53 @@
                 console.log("Already Reset");
             }
         }
+
+        // SWITCHES
+        // Note: 0 is off, 1 is positive / CW, and 2 is negative / CCW
+
+        // Deflecting
+        dvPos.onclick = function() {
+            if (dvValue != 1) {
+                sendPUTforVars(1, "deflectingswitch");
+                dvValue = 1;
+            }  
+        }
+
+        dvOff.onclick = function() {
+            if (dvValue != 0) {
+                sendPUTforVars(0, "deflectingswitch");
+                dvValue = 0;
+            }
+        }
+
+        dvNeg.onclick = function() {
+            if (dvValue != 2) {
+                sendPUTforVars(2, "deflectingswitch");
+                dvValue = 2;
+            }
+        }
+
+        // Magnetic Arc
+        magCW.onclick = function() {
+            if (maValue != 1) {
+                sendPUTforVars(1, "magneticarc");
+                maValue = 1;
+            }  
+        }
+
+        magOff.onclick = function() {
+            if (maValue != 0) {
+                sendPUTforVars(0, "magneticarc");
+                maValue = 0;
+            }
+        }
+
+        magCCW.onclick = function() {
+            if (maValue != 2) {
+                sendPUTforVars(2, "magneticarc");
+                maValue = 2;
+            }
+        }
         
         requestAccess.onclick = function() {
 
@@ -241,7 +286,6 @@
                 setTimeout(function () {
                     getUsersInQueue("http://127.0.0.1:5000/api/queue/", "request");
                 }, 300);
-
             }
             else {
                 alert("You are already in the queue");
@@ -293,8 +337,13 @@
                 values: 50
             };
 
+            var currentPayload = {
+                currentvalue: 0.0
+            }; 
+
             var data = JSON.stringify(payload);
             var defVoltData = JSON.stringify(defVoltPayload);
+            var currentData = JSON.stringify(currentPayload);
 
             for (var id = 1; id < 6; id ++) {
                 
@@ -314,6 +363,20 @@
                         console.log(variable + " responded with " + res.status);
                     })
                 }
+                if (id == 3) {
+                    fetch(url, {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        credentials: "same-origin",
+                        body: currentData
+                    })
+                    .then(function(res) { 
+                        loading = false;
+                        console.log(variable + " responded with " + res.status);
+                    })
+                }
                 else {
                     fetch(url, {
                         method: "PUT",
@@ -325,13 +388,12 @@
                     })
                     .then(function(res) { 
                         loading = false;
-                        console.log("Reset for " + id + " responded with " + res.status);
+                        console.log("\nReset for " + id + " responded with " + res.status);
                     })
                 }
             }
         }
         
-        // For switches 0 is off, 1 is positive and CW, and 2 is negative and CCW
         function sendPUTforVars(postValue, variable) {
 
             var id = 0;
