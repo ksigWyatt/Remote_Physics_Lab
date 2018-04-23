@@ -85,10 +85,10 @@
                 <br />
                 <br />
                 <h5 style="text-align: right;">Magnetic Arc</h5>
-                <div class="btn-group">
-                    <button id="mag-cw" class="button-stack2">Clockwise</button>
-                    <button id="mag-off" class="button-stack2">Off</button>
+                <div class="btn-group">                
                     <button id="mag-ccw" class="button-stack2">Counter CW</button>
+                    <button id="mag-off" class="button-stack2">Off</button>
+                    <button id="mag-cw" class="button-stack2">Clockwise</button>
                 </div>
             </div>
         </div>
@@ -97,8 +97,8 @@
     <script>
         //INIT
         var startTime, interval, elapsedTime, count;
-        var failedCount = 0;
-        var waiting = false;
+        var failedCount, dvValue, maValue = 0;
+        var waiting, loading, beenReset = false;
 
         // Def. Voltage
         var defVoltageSlider = document.getElementById("volt-def-slider");
@@ -136,37 +136,6 @@
             getUsersInQueue("http://127.0.0.1:5000/api/queue/", "init");
         }
 
-        function getUsersInQueue(url, sender) {
-            
-            count = 0;
-            fetch(url, {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                credentials: "same-origin"
-            }).then(function(response) { return response.json(); })
-              .then(function(data) {
-                  
-                for (var i = 0; i < data.objects.length; i++) {
-                    // capture other users information via
-                    // console.log(data.objects[i]);
-                    count++;
-                }
-
-                if (sender == "request"){
-                    afterRequestedCount(count);
-                }
-                else {
-                    updateQueueField(count);
-                }
-
-            }).catch(function(error) {
-                alert("An error occurred");
-                console.log(error);
-            });
-        }
-
         // SLIDERS
         // def. voltage
         defVoltageSlider.oninput = function() {
@@ -186,19 +155,20 @@
         // Make API calls for sliders
         defVoltageSlider.onchange = function() {
 
-            beginTimer()
-            if (this.value <= 250 && this.value >= 50 && elapsedTime >= 199) {
+            beginTimer();
 
-
-                console.log("Sending " + this.value + " to varables/DefVolt/ via PUT." );
-            }
-            else if (elapsedTime < 199) {
+            if (elapsedTime < 199) {
                 failedCount++;
-            }
 
-            if (failedCount > 5) {
+                if (failedCount > 5) {
                     alert("Please allow time for requests to be sent. Making changes rapidly could damage the device.");
                     failedCount = 0;
+                }
+            }
+            else {
+                if (this.value <= 250 && this.value >= 50) {
+                    sendPUTforVars(this.value, "deflectingv");
+                }
             }
         }
 
@@ -206,16 +176,17 @@
 
             beginTimer()
 
-            if (this.value <= 250 && this.value >= 0 && elapsedTime >= 199) {
-
-                console.log("Sending " + this.value + " to varables/AccVolt/ via PUT." );
-            }
-            else if (elapsedTime < 199) {
+            if (elapsedTime < 199) {
                 failedCount++;
 
                 if (failedCount > 5) {
                     alert("Please allow time for requests to be sent. Making changes rapidly could damage the device.");
                     failedCount = 0;
+                }
+            }
+            else {
+                if (this.value <= 250 && this.value >= 0) {
+                    sendPUTforVars(this.value, "accelv");
                 }
             }
         }
@@ -224,10 +195,7 @@
 
             beginTimer()
 
-            if (this.value <= 3 && this.value >= 0 && elapsedTime >= 199) {
-                console.log("Sending " + this.value + " to varables/Current/ via PUT." );
-            }
-            else if (elapsedTime < 199) {
+            if (elapsedTime < 199) {
                 failedCount++;
 
                 if (failedCount > 5) {
@@ -235,19 +203,78 @@
                     failedCount = 0;
                 }
             }
+            else {
+                if (this.value <= 3 && this.value >= 0) {
+                    sendPUTforVars(this.value, "current");
+                }
+            }
         }
 
         // CLICKED BUTTONS
 
         reset.onclick = function() {
-            defVoltageSlider.value = 50;
-            defVoltageValue.innerHTML = 50 + " V";
-            accVoltageSlider.value = 0;
-            accVoltageValue.innerHTML = 0 + " V";
-            currentSlider.value = 0;
-            currentValue.innerHTML = 0 + " A";
 
-            // Update API to reflect resets
+            if (defVoltageSlider.value != 50 || accVoltageSlider.value != 0 || currentSlider != 0) {
+                defVoltageSlider.value = 50;
+                defVoltageValue.innerHTML = 50 + " V";
+                accVoltageSlider.value = 0;
+                accVoltageValue.innerHTML = 0 + " V";
+                currentSlider.value = 0;
+                currentValue.innerHTML = 0 + " A";
+
+                // Update API to reflect resets
+                sendPUTForReset();
+            }
+            else {
+                console.log("Already Reset");
+            }
+        }
+
+        // SWITCHES
+        // Note: 0 is off, 1 is positive / CW, and 2 is negative / CCW
+
+        // Deflecting
+        dvPos.onclick = function() {
+            if (dvValue != 1) {
+                sendPUTforVars(1, "deflectingswitch");
+                dvValue = 1;
+            }  
+        }
+
+        dvOff.onclick = function() {
+            if (dvValue != 0) {
+                sendPUTforVars(0, "deflectingswitch");
+                dvValue = 0;
+            }
+        }
+
+        dvNeg.onclick = function() {
+            if (dvValue != 2) {
+                sendPUTforVars(2, "deflectingswitch");
+                dvValue = 2;
+            }
+        }
+
+        // Magnetic Arc
+        magCW.onclick = function() {
+            if (maValue != 1) {
+                sendPUTforVars(1, "magneticarc");
+                maValue = 1;
+            }  
+        }
+
+        magOff.onclick = function() {
+            if (maValue != 0) {
+                sendPUTforVars(0, "magneticarc");
+                maValue = 0;
+            }
+        }
+
+        magCCW.onclick = function() {
+            if (maValue != 2) {
+                sendPUTforVars(2, "magneticarc");
+                maValue = 2;
+            }
         }
         
         requestAccess.onclick = function() {
@@ -259,7 +286,6 @@
                 setTimeout(function () {
                     getUsersInQueue("http://127.0.0.1:5000/api/queue/", "request");
                 }, 300);
-
             }
             else {
                 alert("You are already in the queue");
@@ -298,6 +324,186 @@
             startTime = Date.now();
             interval = setInterval(function(){
                 updateDisplay(Date.now() - startTime);
+            });
+        }
+
+        function sendPUTForReset() {
+
+            var payload = {
+                values: 0
+            };
+
+            var defVoltPayload = {
+                values: 50
+            };
+
+            var currentPayload = {
+                currentvalue: 0.0
+            }; 
+
+            var data = JSON.stringify(payload);
+            var defVoltData = JSON.stringify(defVoltPayload);
+            var currentData = JSON.stringify(currentPayload);
+
+            for (var id = 1; id < 6; id ++) {
+                
+                var url = "http://127.0.0.1:5000/api/variables/" + id + "/";
+                
+                if (id == 1) {
+                    fetch(url, {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        credentials: "same-origin",
+                        body: defVoltData
+                    })
+                    .then(function(res) { 
+                        loading = false;
+                        console.log(variable + " responded with " + res.status);
+                    })
+                }
+                if (id == 3) {
+                    fetch(url, {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        credentials: "same-origin",
+                        body: currentData
+                    })
+                    .then(function(res) { 
+                        loading = false;
+                        console.log(variable + " responded with " + res.status);
+                    })
+                }
+                else {
+                    fetch(url, {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        credentials: "same-origin",
+                        body: data
+                    })
+                    .then(function(res) { 
+                        loading = false;
+                        console.log("\nReset for " + id + " responded with " + res.status);
+                    })
+                }
+            }
+        }
+        
+        function sendPUTforVars(postValue, variable) {
+
+            var id = 0;
+            
+            var payload = {
+                values: parseInt(postValue)
+            };
+
+            var currentPayload = {
+                currentvalue: parseFloat(postValue)
+            };
+            
+            switch (variable) {
+                case "accelv":
+                    id = 2;
+                    break;
+
+                case "deflectingv":
+                    id = 1;
+                    break;
+
+                case "accelv":
+                    id = 2;
+                    break;
+
+                case "current":
+                    id = 3;
+                    break;
+
+                case "magneticarc":
+                    id = 4;
+                    break;
+
+                case "deflectingswitch":
+                    id = 5;
+                    break;
+
+                default:
+                    break;
+            }
+
+            var data = JSON.stringify(payload);
+            var url = "http://127.0.0.1:5000/api/variables/" + id + "/";
+            
+            if (!loading) {
+                if (id == 3) {
+                    var currentData = JSON.stringify(currentPayload);
+
+                    fetch(url, {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        credentials: "same-origin",
+                        body: currentData
+                    })
+                    .then(function(res) { 
+                        loading = false;
+                        console.log("current responded with " + res.status);
+                    })
+                }
+                else {
+                    fetch(url, {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        credentials: "same-origin",
+                        body: data
+                    })
+                    .then(function(res) { 
+                        loading = false;
+                        console.log(variable + " responded with " + res.status);
+                    })
+                }
+            }
+            else {
+                console.log("Unable to perform selected action for " + variable);
+            }
+            loading = true;
+        }
+
+         function getUsersInQueue(url, sender) {
+            
+            count = 0;
+            fetch(url, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                credentials: "same-origin"
+            }).then(function(response) { return response.json(); })
+              .then(function(data) {
+                  
+                for (var i = 0; i < data.objects.length; i++) {
+                    // capture other users information via
+                    // console.log(data.objects[i]);
+                    count++;
+                }
+
+                if (sender == "request"){
+                    afterRequestedCount(count);
+                }
+                else {
+                    updateQueueField(count);
+                }
+
+            }).catch(function(error) {
+                alert("An error occurred");
+                console.log(error);
             });
         }
 

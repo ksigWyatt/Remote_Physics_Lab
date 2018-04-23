@@ -8,9 +8,10 @@ class Rpl(models.Model):
     id = models.IntegerField(primary_key=True)
     variables = models.CharField(max_length=30, null=True)
     values = models.IntegerField(null=True)
+    currentvalue = models.FloatField(null=True)
 
     def __str__(self):
-        return '%s %s' % (self.variables, self.values)
+        return '%s %s %s' % (self.variables, self.values, self.currentvalue)
 
 class Users(models.Model):
     id = models.IntegerField(primary_key=True)
