@@ -20,5 +20,4 @@ The Software will be comprised of 3 major parts
 - USAF Academy in Colorodo Springs, CO
 
 ## Testing
-- Jest for JS & React
-- PyTest & DjangoTest
+- TastyPie Test & DjangoTest for Unit Testing the API
