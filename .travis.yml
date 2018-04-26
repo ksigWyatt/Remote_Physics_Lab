@@ -22,7 +22,9 @@ install:
   - pip install django-cors-headers
 
 before_script:
-  cd Control-Server/server/remote_physics_lab/
+  - cd Control-Server/server/remote_physics_lab/
+  - python manage.py makemigrations
+  - python manage.py migrate
 
 script:
   python manage.py test RPL/tests
