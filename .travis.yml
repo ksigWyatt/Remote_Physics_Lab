@@ -19,6 +19,7 @@ before-install:
 install:
   - pip install -q Django==$DJANGO_VERSION
   - pip install django-tastypie
+  - pip install django-cors-headers
 
 before_script:
   cd Control-Server/server/remote_physics_lab/
