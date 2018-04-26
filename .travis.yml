@@ -22,4 +22,3 @@ install:
 
 script:
   cd Control-Server/server/remote_physics_lab/
-  python manage.py test RPL/tests
