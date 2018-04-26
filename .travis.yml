@@ -15,11 +15,11 @@ env:
 
 before-install:
   - python -m pip install --upgrade pip
+  - cd Control-Server/server/remote_physics_lab/
 
 install:
   - pip install -q Django==$DJANGO_VERSION
   - pip install django-tastypie
 
 script:
-  cd Control-Server/server/remote_physics_lab/
   python manage.py test RPL/tests
