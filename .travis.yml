@@ -20,5 +20,8 @@ install:
   - pip install -q Django==$DJANGO_VERSION
   - pip install django-tastypie
 
-script:
+before_script:
   cd Control-Server/server/remote_physics_lab/
+
+script:
+  python manage.py test RPL/tests
