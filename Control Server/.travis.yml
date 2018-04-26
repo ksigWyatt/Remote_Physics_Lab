@@ -8,6 +8,7 @@ branches:
   - master
   - dev
   - adding-tests
+  - API-Tests
 
 notifications:
   email: false
