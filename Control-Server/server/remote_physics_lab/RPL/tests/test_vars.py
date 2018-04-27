@@ -1,6 +1,6 @@
 from django.test import TestCase
 from RPL.models import Rpl
-from tastypie.test import ResourceTestCaseMixin
+from tastypie.test import ResourceTestCaseMixin, TestApiClient
 
 class VarsTestCase(ResourceTestCaseMixin, TestCase):
     def setUp(self):
@@ -24,3 +24,25 @@ class VarsTestCase(ResourceTestCaseMixin, TestCase):
 
         resp = self.client.get('/api/variables/', HTTP_HOST='docs.djangoproject.dev:8000')
         self.assertEqual(resp.status_code, 200)
+
+    def test_put_vars(self):
+        """ Performs PUT request for vars id=1"""
+        client = TestApiClient()
+
+        response = client.put('/api/variables/1/', data={
+            'values': 150
+        })
+
+        # 204 == Action Performed -> No Data
+        self.assertEqual(response.status_code, 204)
+
+    def test_put_vars_for_current(self):
+        """ Performs PUT request for currentvalue of id=2"""
+        client = TestApiClient()
+
+        response = client.put('/api/variables/2/', data={
+            'currentvalue': 2.15
+        })
+
+        # 204 == Action Performed -> No Data
+        self.assertEqual(response.status_code, 204)
