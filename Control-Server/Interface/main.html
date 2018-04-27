@@ -19,7 +19,7 @@
         <div class="column left1"></div>
         <div class="column middle1">
             <div id="video-feed" class="video">
-                <p><iframe width="1024" height="576" src="https://www.youtube.com/embed/UFYopo_MlJc?&amp;showinfo=0" frameBorder="0" allow="autoplay; encrypted-media"></iframe></p>
+                <p><iframe width="1024" height="576" src="https://www.youtube.com/embed/qrdHXFIoe_o?&amp;showinfo=0" frameBorder="0" allow="autoplay; encrypted-media"></iframe></p>
                 <h3>Live Video</h3>
             </div>
         </div>
@@ -281,7 +281,7 @@
 
                 // wait 300ms for the post to go through
                 setTimeout(function () {
-                    getUsersInQueue("http://127.0.0.1:5000/api/queue/", "request");
+                    getUsersInQueue("http://69.88.163.:5000/api/queue/", "request");
                 }, 300);
             }
             else {
@@ -369,11 +369,11 @@
             currentValue.innerHTML = 0 + " A";
 
             var payload = {
-                values: 0
+                values_used: 0
             };
 
             var defVoltPayload = {
-                values: 50
+                values_used: 50
             };
 
             var currentPayload = {
@@ -439,11 +439,11 @@
                 var id = 0;
                 
                 var payload = {
-                    values: parseInt(postValue)
+                    values_used: parseInt(postValue)
                 };
 
                 var currentPayload = {
-                    currentvalue: parseFloat(postValue)
+                    values_used: (postValue * 300) 
                 };
                 
                 switch (variable) {
