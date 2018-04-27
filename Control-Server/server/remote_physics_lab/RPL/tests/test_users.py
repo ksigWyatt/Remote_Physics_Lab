@@ -2,7 +2,7 @@ from django.test import TestCase
 from RPL.models import Users
 from tastypie.test import ResourceTestCaseMixin, TestApiClient
 
-class UserTestCase(TestCase):
+class UserTestCase(ResourceTestCaseMixin, TestCase):
     def setUp(self):
         Users.objects.create(ip="127.0.0.1", place=999)
         Users.objects.create(ip="127.0.0.1", place=998)
@@ -32,7 +32,7 @@ class UserTestCase(TestCase):
         self.assertEqual(response.status_code, 201)
 
     def test_put_queue(self):
-        """ Performs PUT request for queue id=1"""
+        """ Performs PUT request for queue id=2"""
         client = TestApiClient()
 
         response = client.put('/api/queue/2/', data={
@@ -43,7 +43,7 @@ class UserTestCase(TestCase):
         self.assertEqual(response.status_code, 204)
 
     def test_delete_queue_item(self):
-        """ Performs DELETE request to queue id 1"""
+        """ Performs DELETE request to queue id 2"""
         client = TestApiClient()
 
         response = client.delete('/api/queue/2/',data={'format': 'json'})
