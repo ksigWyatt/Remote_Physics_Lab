@@ -20,9 +20,15 @@ install:
   - pip install -q Django==$DJANGO_VERSION
   - pip install django-tastypie
   - pip install django-cors-headers
+  # - pip install django-nose
+  # - pip install coverage
 
 before_script:
   - cd Control-Server/server/remote_physics_lab/
 
 script:
   python manage.py test RPL/tests --verbosity=3
+
+# enable for code coverage
+# after-script:
+#   python manage.py test RPL/tests --verbosity=0 --cover-package=RPL
