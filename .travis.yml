@@ -27,4 +27,4 @@ before_script:
   - python manage.py migrate
 
 script:
-  python manage.py test RPL/tests
+  python manage.py test RPL/tests --verbosity=3
