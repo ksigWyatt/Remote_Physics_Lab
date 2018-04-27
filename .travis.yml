@@ -23,8 +23,6 @@ install:
 
 before_script:
   - cd Control-Server/server/remote_physics_lab/
-  - python manage.py makemigrations
-  - python manage.py migrate
 
 script:
   python manage.py test RPL/tests --verbosity=3
