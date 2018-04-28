@@ -10,7 +10,7 @@ class Rpl(models.Model):
     values_used = models.IntegerField(null=True)
 
     def __str__(self):
-        return '%s %s %s' % (self.variables, self.values, self.currentvalue)
+        return '%s %s %s' % (self.variables, self.values_used, self.currentvalue)
 
 class Users(models.Model):
     id = models.IntegerField(primary_key=True)
