@@ -28,6 +28,7 @@ class VarsTestCase(ResourceTestCaseMixin, TestCase):
 
     def test_put_vars(self):
         """ Performs PUT request for vars id=1"""
+
         client = TestApiClient()
 
         response = client.put('/api/variables/1/', data= {
@@ -38,7 +39,8 @@ class VarsTestCase(ResourceTestCaseMixin, TestCase):
         self.assertEqual(response.status_code, 204)
 
     def test_put_vars_for_current(self):
-    """ Performs PUT request for mag-current value """
+        """ Performs PUT request for mag-current value """
+
         client = TestApiClient()
 
         response = client.put('/api/variables/2/', data= {
