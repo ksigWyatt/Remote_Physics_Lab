@@ -446,9 +446,10 @@
                 var payload = {
                     values_used: parseInt(postValue)
                 };
-
+                
+                // Using factor of 100 so that we can ensure that this is of int type
                 var currentPayload = {
-                    values_used: (postValue * 300) 
+                    values_used: (postValue * 100) 
                 };
                 
                 switch (variable) {
