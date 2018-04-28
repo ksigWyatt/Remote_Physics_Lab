@@ -5,7 +5,7 @@ from tastypie.test import ResourceTestCaseMixin, TestApiClient
 class VarsTestCase(ResourceTestCaseMixin, TestCase):
     def setUp(self):
         Rpl.objects.create(variables="accelv", values_used=0)
-        Rpl.objects.create(variables="current", values_used=0)
+        Rpl.objects.create(variables="current", values_used=100)
         
     def test_var_created(self):
         """Var was successfully created"""
