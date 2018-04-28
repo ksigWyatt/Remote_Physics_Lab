@@ -6,6 +6,7 @@ class VarsTestCase(ResourceTestCaseMixin, TestCase):
     def setUp(self):
         Rpl.objects.create(variables="accelv", values_used=0)
         Rpl.objects.create(variables="current", values_used=100)
+        # Remember current is multiple 100 so that all numbers are int
         
     def test_var_created(self):
         """Var was successfully created"""
@@ -37,7 +38,7 @@ class VarsTestCase(ResourceTestCaseMixin, TestCase):
         self.assertEqual(response.status_code, 204)
 
     def test_put_vars_for_current(self):
-        """ Performs PUT request for currentvalue of id=2"""
+    """ Performs PUT request for mag-current value """
         client = TestApiClient()
 
         response = client.put('/api/variables/2/', data= {
