@@ -4,6 +4,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Welcome to the Remote Physics Lab</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/core.js"></script>
     <link rel="stylesheet" href="main.css">
     <link href="https://fonts.googleapis.com/css?family=Muli" rel="stylesheet">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.10/css/all.css" integrity="sha384-+d0P83n9kaQMCwj8F4RJB66tzIwOKmrdb46+porD/OvrJ+37WqIM7UoBtwHO6Nlg" crossorigin="anonymous">
@@ -18,7 +19,7 @@
         <div class="column left1"></div>
         <div class="column middle1">
             <div id="video-feed" class="video">
-                <p><iframe width="1024" height="576" src="https://www.youtube.com/embed/UFYopo_MlJc?&amp;showinfo=0" frameBorder="0" allow="autoplay; encrypted-media"></iframe></p>
+                <p><iframe width="1024" height="576" src="https://www.youtube.com/embed/qrdHXFIoe_o?&amp;showinfo=0" frameBorder="0" allow="autoplay; encrypted-media"></iframe></p>
                 <h3>Live Video</h3>
             </div>
         </div>
@@ -35,6 +36,7 @@
         <br />
         <button id="request-access" class="button">Request Access</button>
         <p id="queue"></p>
+        <p><span id="timer"></span></p>
 
         <br />
         <br />
@@ -96,9 +98,9 @@
 
     <script>
         //INIT
-        var startTime, interval, elapsedTime, count;
+        var startTime, interval, elapsedTime, count, userIP, position, currentUserID;
         var failedCount, dvValue, maValue = 0;
-        var waiting, loading, beenReset = false;
+        var waiting, loading, beenReset, GrantedAccess = false;
 
         // Def. Voltage
         var defVoltageSlider = document.getElementById("volt-def-slider");
@@ -134,6 +136,7 @@
 
             // load number of users onload
             getUsersInQueue("http://127.0.0.1:5000/api/queue/", "init");
+            getUserIP();
         }
 
         // SLIDERS
@@ -215,12 +218,6 @@
         reset.onclick = function() {
 
             if (defVoltageSlider.value != 50 || accVoltageSlider.value != 0 || currentSlider != 0) {
-                defVoltageSlider.value = 50;
-                defVoltageValue.innerHTML = 50 + " V";
-                accVoltageSlider.value = 0;
-                accVoltageValue.innerHTML = 0 + " V";
-                currentSlider.value = 0;
-                currentValue.innerHTML = 0 + " A";
 
                 // Update API to reflect resets
                 sendPUTForReset();
@@ -294,21 +291,60 @@
 
         // FUNCS & API
 
-        function addUserToQueue() {
+        function addUserToQueue(place) {
 
             waiting = true;
+            if (count == 0) {
+                postUserToDB();
+                getUsersInQueue("http://127.0.0.1:5000/api/queue/", "request");
+            }
+            else {
+                postUserToDB();
+                // wait 30 seconds and see if it's your turn
+                setTimeout(function () {
+                    getUsersInQueue("http://127.0.0.1:5000/api/queue/", "request");
+                }, 30000);
+            }
+            
+        }
 
-            // get current user session and send that to the api
+        function postUserToDB() {
+
             count++;
 
-            // wait 30 seconds and see if it's your turn
-            setTimeout(function () {
-                // getUsersInQueue("http://127.0.0.1:5000/api/queue/", "request");
-            }, 30000);
+            var payload = {
+                ip: userIP,
+                place: count
+            };
+
+            var url = "http://127.0.0.1:5000/api/queue/";
+            var data = JSON.stringify(payload);
+
+            fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                credentials: "same-origin",
+                body: data
+            })
+            .then(function(res) { 
+                loading = false;
+                console.log("\nPOST user responded with " + res.status);
+            })
         }
 
         function afterRequestedCount(num) {
-            queueText.innerHTML = "You are currently " + num + " in the queue.";
+
+            if (num == 0) {
+                GrantedAccess = true;
+                queueText.innerHTML = "You now have access.";
+                countdown(5);
+            }
+
+            else {
+                queueText.innerHTML = "You are currently " + num + " in the queue.";
+            }
         }
 
         function updateQueueField(num) {
@@ -329,12 +365,19 @@
 
         function sendPUTForReset() {
 
+            defVoltageSlider.value = 50;
+            defVoltageValue.innerHTML = 50 + " V";
+            accVoltageSlider.value = 0;
+            accVoltageValue.innerHTML = 0 + " V";
+            currentSlider.value = 0;
+            currentValue.innerHTML = 0 + " A";
+
             var payload = {
-                values: 0
+                values_used: 0
             };
 
             var defVoltPayload = {
-                values: 50
+                values_used: 50
             };
 
             var currentPayload = {
@@ -396,84 +439,93 @@
         
         function sendPUTforVars(postValue, variable) {
 
-            var id = 0;
-            
-            var payload = {
-                values: parseInt(postValue)
-            };
+            if (GrantedAccess) {
 
-            var currentPayload = {
-                currentvalue: parseFloat(postValue)
-            };
-            
-            switch (variable) {
-                case "accelv":
-                    id = 2;
-                    break;
+                var id = 0;
+                
+                var payload = {
+                    values_used: parseInt(postValue)
+                };
+                
+                // Using factor of 100 so that we can ensure that this is of int type
+                var currentPayload = {
+                    values_used: (postValue * 100) 
+                };
+                
+                switch (variable) {
+                    case "accelv":
+                        id = 2;
+                        break;
 
-                case "deflectingv":
-                    id = 1;
-                    break;
+                    case "deflectingv":
+                        id = 1;
+                        break;
 
-                case "accelv":
-                    id = 2;
-                    break;
+                    case "accelv":
+                        id = 2;
+                        break;
 
-                case "current":
-                    id = 3;
-                    break;
+                    case "current":
+                        id = 3;
+                        break;
 
-                case "magneticarc":
-                    id = 4;
-                    break;
+                    case "magneticarc":
+                        id = 4;
+                        break;
 
-                case "deflectingswitch":
-                    id = 5;
-                    break;
+                    case "deflectingswitch":
+                        id = 5;
+                        break;
 
-                default:
-                    break;
-            }
+                    default:
+                        break;
+                }
 
-            var data = JSON.stringify(payload);
-            var url = "http://127.0.0.1:5000/api/variables/" + id + "/";
-            
-            if (!loading) {
-                if (id == 3) {
-                    var currentData = JSON.stringify(currentPayload);
+                Remote_Physics_Lab/Control-Server/server/remote_physics_lab/db.sqlite3
 
-                    fetch(url, {
-                        method: "PUT",
-                        headers: {
-                            "Content-Type": "application/json"
-                        },
-                        credentials: "same-origin",
-                        body: currentData
-                    })
-                    .then(function(res) { 
-                        loading = false;
-                        console.log("current responded with " + res.status);
-                    })
+                var data = JSON.stringify(payload);
+                var url = "http://127.0.0.1:5000/api/variables/" + id + "/";
+                
+                if (!loading) {
+                    if (id == 3) {
+                        var currentData = JSON.stringify(currentPayload);
+
+                        fetch(url, {
+                            method: "PUT",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            credentials: "same-origin",
+                            body: currentData
+                        })
+                        .then(function(res) { 
+                            loading = false;
+                            console.log("current responded with " + res.status);
+                        })
+                    }
+                    else {
+                        fetch(url, {
+                            method: "PUT",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            credentials: "same-origin",
+                            body: data
+                        })
+                        .then(function(res) { 
+                            loading = false;
+                            console.log(variable + " responded with " + res.status);
+                        })
+                    }
                 }
                 else {
-                    fetch(url, {
-                        method: "PUT",
-                        headers: {
-                            "Content-Type": "application/json"
-                        },
-                        credentials: "same-origin",
-                        body: data
-                    })
-                    .then(function(res) { 
-                        loading = false;
-                        console.log(variable + " responded with " + res.status);
-                    })
+                    console.log("Unable to perform selected action for " + variable);
                 }
+                loading = true;
             }
             else {
-                console.log("Unable to perform selected action for " + variable);
+                alert("You do not currently have access.");
             }
-            loading = true;
         }
 
          function getUsersInQueue(url, sender) {
@@ -489,14 +541,20 @@
               .then(function(data) {
                   
                 for (var i = 0; i < data.objects.length; i++) {
-                    // capture other users information via
-                    // console.log(data.objects[i]);
                     count++;
-                }
 
-                if (sender == "request"){
-                    afterRequestedCount(count);
+                    if (userIP == data.objects[i].ip) {
+                        position = i
+                        currentUserID = data.objects[i].id
+                    }
                 }
+                
+                position = 0;
+                if (sender == "request") {
+                    if (position != null) {
+                        afterRequestedCount(position);
+                    }
+                } 
                 else {
                     updateQueueField(count);
                 }
@@ -505,6 +563,44 @@
                 alert("An error occurred");
                 console.log(error);
             });
+        }
+
+        function getUserIP() {
+
+            fetch("http://api.db-ip.com/v2/free/self", {
+                method: "GET"
+            }).then(function(response) { return response.json(); })
+              .then(function(data) {
+                
+                if (data.ipAddress) {
+                    userIP = data.ipAddress;
+                }
+
+            }).catch(function(error) {
+                alert("An error occurred");
+                console.log(error);
+            });
+        }
+
+        function deleteUserFromQueue() {
+
+            if (currentUserID) {
+
+                var url = "http://127.0.0.1:5000/api/queue/" + currentUserID +"/"
+                fetch(url, {
+                    method: "DELETE",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    credentials: "same-origin"
+                }).then(function(response) {
+                    console.log("Delete the current user responded with " + response.status);
+                }).catch(function(error) {
+                    alert("An error occurred");
+                    console.log(error);
+                });
+            }
+            
         }
 
         function updateDisplay(currentTime) {
@@ -519,6 +615,46 @@
 
         function stopTimer() {
             clearInterval(interval);
+        }
+
+        function countdown(minutes) {
+        var seconds = 60;
+        var mins = minutes
+        
+        function tick() {
+            //This script expects an element with an ID = "counter". You can change that to what ever you want. 
+            var counter = document.getElementById("timer");
+            var current_minutes = mins-1;
+            seconds--;
+            counter.innerHTML = current_minutes.toString() + ":"
+            + (seconds < 10 ? "0" : "") + String(seconds);
+            if( seconds > 0 ) {
+                setTimeout(tick, 1000);
+            }
+            else {
+                if(mins > 1) {
+                    countdown(mins-1);           
+                }
+                if (current_minutes == 0 && seconds == 0) {
+                    sendPUTForReset(); 
+                    deleteUserFromQueue(); 
+                    queueText.innerHTML = "Your time is up."
+                    GrantedAccess = false; 
+                    getUsersInQueue("http://127.0.0.1:5000/api/queue/", "init");
+                }
+            }
+        }
+        tick();
+    }
+
+        function checkSecond(sec) {
+            if (sec < 10 && sec >= 0) {
+                sec = "0" + sec
+            }; // add zero in front of numbers if < 10
+            if (sec < 0) {
+                sec = "59"
+            };
+            return sec;
         }
     </script>
 </body>
