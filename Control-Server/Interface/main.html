@@ -281,7 +281,7 @@
 
                 // wait 300ms for the post to go through
                 setTimeout(function () {
-                    getUsersInQueue("http://69.88.163.:5000/api/queue/", "request");
+                    getUsersInQueue("http://127.0.0.1:5000/api/queue/", "request");
                 }, 300);
             }
             else {
@@ -294,13 +294,18 @@
         function addUserToQueue(place) {
 
             waiting = true;
-
-            postUserToDB();
-
-            // wait 30 seconds and see if it's your turn
-            setTimeout(function () {
+            if (count == 0) {
+                postUserToDB();
                 getUsersInQueue("http://127.0.0.1:5000/api/queue/", "request");
-            }, 30000);
+            }
+            else {
+                postUserToDB();
+                // wait 30 seconds and see if it's your turn
+                setTimeout(function () {
+                    getUsersInQueue("http://127.0.0.1:5000/api/queue/", "request");
+                }, 30000);
+            }
+            
         }
 
         function postUserToDB() {
@@ -334,8 +339,7 @@
             if (num == 0) {
                 GrantedAccess = true;
                 queueText.innerHTML = "You now have access.";
-                document.getElementById('timer').innerHTML = 00 + ":" + 01;
-                startTimer();
+                countdown(5);
             }
 
             else {
@@ -436,6 +440,7 @@
         function sendPUTforVars(postValue, variable) {
 
             if (GrantedAccess) {
+
                 var id = 0;
                 
                 var payload = {
@@ -474,6 +479,8 @@
                     default:
                         break;
                 }
+
+                Remote_Physics_Lab/Control-Server/server/remote_physics_lab/db.sqlite3
 
                 var data = JSON.stringify(payload);
                 var url = "http://127.0.0.1:5000/api/variables/" + id + "/";
@@ -516,7 +523,7 @@
                 loading = true;
             }
             else {
-                alert("You do not yet have access to the device. Please Click 'Request Access' to join the queue.");
+                alert("You do not currently have access.");
             }
         }
 
@@ -609,26 +616,35 @@
             clearInterval(interval);
         }
 
-        function startTimer() {
-            var presentTime = document.getElementById('timer').innerHTML;
-            var timeArray = presentTime.split(/[:]+/);
-            var m = timeArray[0];
-            var s = checkSecond((timeArray[1] - 1));
-            if(s == 59) {
-                m=m-1
+        function countdown(minutes) {
+        var seconds = 60;
+        var mins = minutes
+        
+        function tick() {
+            //This script expects an element with an ID = "counter". You can change that to what ever you want. 
+            var counter = document.getElementById("timer");
+            var current_minutes = mins-1;
+            seconds--;
+            counter.innerHTML = current_minutes.toString() + ":"
+            + (seconds < 10 ? "0" : "") + String(seconds);
+            if( seconds > 0 ) {
+                setTimeout(tick, 1000);
             }
-            if(m < 0) {
-                sendPUTForReset();
-                deleteUserFromQueue();
-                queueText.innerHTML = "Your time is up."
-                document.getElementById('timer').innerHTML = "";
-                GrantedAccess = false;
-                getUsersInQueue("http://127.0.0.1:5000/api/queue/", "init");
+            else {
+                if(mins > 1) {
+                    countdown(mins-1);           
+                }
+                if (current_minutes == 0 && seconds == 0) {
+                    sendPUTForReset(); 
+                    deleteUserFromQueue(); 
+                    queueText.innerHTML = "Your time is up."
+                    GrantedAccess = false; 
+                    getUsersInQueue("http://127.0.0.1:5000/api/queue/", "init");
+                }
             }
-            
-            document.getElementById('timer').innerHTML = m + ":" + s;
-            setTimeout(startTimer, 1000);
         }
+        tick();
+    }
 
         function checkSecond(sec) {
             if (sec < 10 && sec >= 0) {
