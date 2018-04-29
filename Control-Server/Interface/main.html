@@ -311,7 +311,8 @@
             else {
                 postUserToDB();
                 // wait 30 seconds and see if it's your turn
-                setTimeout(function () {
+                // TODO: Update users place in the queue every time this fires
+                setInterval(function () {
                     getUsersInQueue("http://127.0.0.1:5000/api/queue/", "request");
                 }, 30000);
             }
