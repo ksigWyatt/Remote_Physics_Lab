@@ -276,6 +276,16 @@
         
         requestAccess.onclick = function() {
 
+            // Forfeiting Access
+            if (GrantedAccess) {
+                sendPUTForReset(); 
+                deleteUserFromQueue(); 
+                queueText.innerHTML = "Your time is up."
+                requestAccess.innerHTML = "Request Access";
+                GrantedAccess = false; 
+                getUsersInQueue("http://127.0.0.1:5000/api/queue/", "init");
+            }
+
             if (!waiting) {
                 addUserToQueue();
 
@@ -338,6 +348,7 @@
 
             if (num == 0) {
                 GrantedAccess = true;
+                requestAccess.innerHTML = "Forfeit Access";
                 queueText.innerHTML = "You now have access.";
                 countdown(5);
             }
@@ -547,10 +558,10 @@
                     }
                 }
                 
-                position = 0;
                 if (sender == "request") {
                     if (position != null) {
-                        afterRequestedCount(position);
+                        // we should add one because the count plus one would be us
+                        afterRequestedCount(position + 1);
                     }
                 } 
                 else {
@@ -637,6 +648,7 @@
                     sendPUTForReset(); 
                     deleteUserFromQueue(); 
                     queueText.innerHTML = "Your time is up."
+                    requestAccess.innerHTML = "Request Access";
                     GrantedAccess = false; 
                     getUsersInQueue("http://127.0.0.1:5000/api/queue/", "init");
                 }
