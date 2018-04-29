@@ -217,13 +217,18 @@
 
         reset.onclick = function() {
 
-            if (defVoltageSlider.value != 50 || accVoltageSlider.value != 0 || currentSlider != 0) {
+            if (GrantedAccess) {
+                if (defVoltageSlider.value != 50 || accVoltageSlider.value != 0 || currentSlider != 0) {
 
-                // Update API to reflect resets
-                sendPUTForReset();
+                    // Update API to reflect resets
+                    sendPUTForReset();
+                }
+                else {
+                    console.log("Already Reset");
+                }
             }
             else {
-                console.log("Already Reset");
+                alert("You do not currently have access.");
             }
         }
 
