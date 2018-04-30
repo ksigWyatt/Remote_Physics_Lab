@@ -237,3 +237,13 @@ h4, h2, h3, p {
         stroke: #004785;
     }
 }
+
+/* Custom Color when selecting text */
+
+::-moz-selection { /* Firefox */
+    background: #5F879F;
+}
+
+::selection {
+    background: #5F879F;
+}
