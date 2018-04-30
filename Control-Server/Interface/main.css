@@ -169,6 +169,7 @@ h4, h2, h3, p {
     bottom: 0;
     left: 0;
     right: 0;
+    width: 100%;
 }
 
 .loader {
@@ -189,7 +190,7 @@ h4, h2, h3, p {
     bottom: 0;
     left: 0;
     right: 0;
-    padding: 0px;
+    padding: 5px;
 }
 
 .path {

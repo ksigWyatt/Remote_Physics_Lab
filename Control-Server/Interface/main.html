@@ -137,8 +137,8 @@
         // Labels
         var queueText = document.getElementById("queue");
         var loader = document.getElementById("loader");
+        var counter = document.getElementById("timer");
         
-
         // MARK: INIT
         function init() {
 
@@ -297,17 +297,7 @@
         
         requestAccess.onclick = function() {
 
-            // Forfeiting Access
-            if (grantedAccess) {
-                sendPUTForReset(); 
-                deleteUserFromQueue(); 
-                queueText.innerHTML = "Your time is up."
-                requestAccess.innerHTML = "Request Access";
-                grantedAccess = false; 
-                getUsersInQueue("http://127.0.0.1:5000/api/queue/", "init");
-            }
-
-            if (!waiting) {
+            if (!waiting && !grantedAccess) {
                 addUserToQueue();
 
                 // wait 300ms for the post to go through
@@ -315,8 +305,13 @@
                     getUsersInQueue("http://127.0.0.1:5000/api/queue/", "request");
                 }, 300);
             }
-            else {
+            else if (waiting) {
                 alert("You are already in the queue");
+            }
+
+            // Forfeiting Access
+            if (grantedAccess) {
+               resetAfterRevokingAccess();
             }
         }
 
@@ -335,11 +330,13 @@
                 postUserToDB();
                 // wait 30 seconds and see if it's your turn
                 // TODO: Update users place in the queue every time this fires
-                setInterval(function () {
-                    getUsersInQueue("http://127.0.0.1:5000/api/queue/", "request");
-                }, 30000);
+
+                if (!grantedAccess) {
+                    setInterval(function () {
+                        getUsersInQueue("http://127.0.0.1:5000/api/queue/", "request");
+                    }, 30000);
+                }
             }
-            
         }
 
         function postUserToDB() {
@@ -371,13 +368,7 @@
         function afterRequestedCount(num) {
 
             if (num == 0) {
-                loader.hidden = true;
-                // Make sure any changes the user attempted to make are undone first
-                sendPUTForReset();
-                grantedAccess = true;
-                requestAccess.innerHTML = "Forfeit Access";
-                queueText.innerHTML = "You now have access.";
-                countdown(5);
+                grantAccessToUser();
             }
 
             else {
@@ -387,9 +378,10 @@
 
         function updateQueueField(num) {
 
-            if (num > 0)
+            if (num > 1)
                 queueText.innerHTML = num + " students waiting";
-
+            else if (num == 1) 
+                queueText.innerHTML = num + " student waiting";
             else if (num == 0)
                 queueText.innerHTML = " No students waiting";
         }
@@ -419,18 +411,20 @@
             };
 
             var currentPayload = {
-                currentvalue: 0.0
+                values_used: 0
             }; 
 
             var data = JSON.stringify(payload);
-            var defVoltData = JSON.stringify(defVoltPayload);
-            var currentData = JSON.stringify(currentPayload);
 
             for (var id = 1; id < 6; id ++) {
                 
                 var url = "http://127.0.0.1:5000/api/variables/" + id + "/";
+                console.log(id);
                 
                 if (id == 1) {
+
+                    var defVoltData = JSON.stringify(defVoltPayload);
+
                     fetch(url, {
                         method: "PUT",
                         headers: {
@@ -441,10 +435,13 @@
                     })
                     .then(function(res) { 
                         loading = false;
-                        console.log(variable + " responded with " + res.status);
+                        console.log("\nReset for /1/ responded with " + res.status);
                     })
                 }
                 else if (id == 3) {
+
+                    var currentData = JSON.stringify(currentPayload);
+
                     fetch(url, {
                         method: "PUT",
                         headers: {
@@ -455,7 +452,7 @@
                     })
                     .then(function(res) { 
                         loading = false;
-                        console.log(variable + " responded with " + res.status);
+                        console.log("\nReset for /3/ responded with " + res.status);
                     })
                 }
                 else {
@@ -469,7 +466,7 @@
                     })
                     .then(function(res) { 
                         loading = false;
-                        console.log("\nReset for " + id + " responded with " + res.status);
+                        console.log("\nReset responded with " + res.status);
                     })
                 }
             }
@@ -588,7 +585,7 @@
                 if (sender == "request") {
                     if (position != null) {
                         // we should add one because the count plus one would be us
-                        afterRequestedCount(position + 1);
+                        afterRequestedCount(position);
                     }
                 } 
                 else {
@@ -635,8 +632,29 @@
                     alert("An error occurred");
                     console.log(error);
                 });
-            }
-            
+            }  
+        }
+
+        function resetAfterRevokingAccess() {
+            sendPUTForReset(); 
+            deleteUserFromQueue(); 
+            queueText.innerHTML = "Your time is up."
+            requestAccess.innerHTML = "Request Access";
+            counter.hidden = true;
+            grantedAccess = false; 
+            getUsersInQueue("http://127.0.0.1:5000/api/queue/", "init");
+        }
+
+        function grantAccessToUser() {
+            loader.hidden = true;
+            // Make sure any changes the user attempted to make are undone first
+            sendPUTForReset();
+            grantedAccess = true;
+            waiting = false;
+            requestAccess.innerHTML = "Forfeit Access";
+            queueText.innerHTML = "You now have access.";
+            counter.hidden = false;
+            countdown(5);
         }
 
         function updateDisplay(currentTime) {
@@ -659,7 +677,6 @@
         
         function tick() {
             
-            var counter = document.getElementById("timer");
             var current_minutes = mins-1;
             seconds--;
             counter.innerHTML = current_minutes.toString() + ":"
@@ -672,27 +689,22 @@
                     countdown(mins-1);           
                 }
                 if (current_minutes == 0 && seconds == 0) {
-                    sendPUTForReset(); 
-                    deleteUserFromQueue(); 
-                    queueText.innerHTML = "Your time is up."
-                    requestAccess.innerHTML = "Request Access";
-                    grantedAccess = false; 
-                    getUsersInQueue("http://127.0.0.1:5000/api/queue/", "init");
+                    resetAfterRevokingAccess();
                 }
             }
         }
         tick();
     }
 
-        function checkSecond(sec) {
-            if (sec < 10 && sec >= 0) {
-                sec = "0" + sec
-            }; // add zero in front of numbers if < 10
-            if (sec < 0) {
-                sec = "59"
-            };
-            return sec;
-        }
+    function checkSecond(sec) {
+        if (sec < 10 && sec >= 0) {
+            sec = "0" + sec
+        }; // add zero in front of numbers if < 10
+        if (sec < 0) {
+            sec = "59"
+        };
+        return sec;
+    }
     </script>
 </body>
 </html>
