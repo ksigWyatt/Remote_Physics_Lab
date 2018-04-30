@@ -34,6 +34,14 @@
         <hr>
         <br />
         <button id="request-access" class="button">Request Access</button>
+        <div class="showbox">
+            <div id="loader" class="loader">
+                <svg class="circular" viewBox="25 25 50 50">
+                <circle class="path" cx="50" cy="50" r="20" fill="none" stroke-width="2" stroke-miterlimit="10"/>
+                </svg>
+            </div>
+        </div>
+
         <p id="queue"></p>
         <p><span id="timer"></span></p>
 
@@ -99,7 +107,7 @@
         //INIT
         var startTime, interval, elapsedTime, count, userIP, position, currentUserID;
         var failedCount, dvValue, maValue = 0;
-        var waiting, loading, beenReset, GrantedAccess = false;
+        var waiting, loading, beenReset, grantedAccess = false;
 
         // Def. Voltage
         var defVoltageSlider = document.getElementById("volt-def-slider");
@@ -128,13 +136,22 @@
 
         // Labels
         var queueText = document.getElementById("queue");
+        var loader = document.getElementById("loader");
         
 
         // MARK: INIT
         function init() {
 
-            // load number of users onload
+            loader.hidden = true; 
+
             getUsersInQueue("http://127.0.0.1:5000/api/queue/", "init");
+
+            // Refresh every 30 seconds the text for the number of users in the queue
+            // assuming that you currently have no access
+            setInterval(function () {
+                if (!grantedAccess)
+                    getUsersInQueue("http://127.0.0.1:5000/api/queue/", "init");
+            }, 30000);
             getUserIP();
         }
 
@@ -216,7 +233,7 @@
 
         reset.onclick = function() {
 
-            if (GrantedAccess) {
+            if (grantedAccess) {
                 if (defVoltageSlider.value != 50 || accVoltageSlider.value != 0 || currentSlider != 0) {
 
                     // Update API to reflect resets
@@ -281,12 +298,12 @@
         requestAccess.onclick = function() {
 
             // Forfeiting Access
-            if (GrantedAccess) {
+            if (grantedAccess) {
                 sendPUTForReset(); 
                 deleteUserFromQueue(); 
                 queueText.innerHTML = "Your time is up."
                 requestAccess.innerHTML = "Request Access";
-                GrantedAccess = false; 
+                grantedAccess = false; 
                 getUsersInQueue("http://127.0.0.1:5000/api/queue/", "init");
             }
 
@@ -308,6 +325,8 @@
         function addUserToQueue(place) {
 
             waiting = true;
+            loader.hidden = false;
+            
             if (count == 0) {
                 postUserToDB();
                 getUsersInQueue("http://127.0.0.1:5000/api/queue/", "request");
@@ -352,7 +371,10 @@
         function afterRequestedCount(num) {
 
             if (num == 0) {
-                GrantedAccess = true;
+                loader.hidden = true;
+                // Make sure any changes the user attempted to make are undone first
+                sendPUTForReset();
+                grantedAccess = true;
                 requestAccess.innerHTML = "Forfeit Access";
                 queueText.innerHTML = "You now have access.";
                 countdown(5);
@@ -455,7 +477,7 @@
         
         function sendPUTforVars(postValue, variable) {
 
-            if (GrantedAccess) {
+            if (grantedAccess) {
 
                 var id = 0;
                 
@@ -654,7 +676,7 @@
                     deleteUserFromQueue(); 
                     queueText.innerHTML = "Your time is up."
                     requestAccess.innerHTML = "Request Access";
-                    GrantedAccess = false; 
+                    grantedAccess = false; 
                     getUsersInQueue("http://127.0.0.1:5000/api/queue/", "init");
                 }
             }

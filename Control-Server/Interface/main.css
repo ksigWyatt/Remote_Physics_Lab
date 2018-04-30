@@ -160,3 +160,80 @@ h4, h2, h3, p {
 .btn-group .button-stack2:hover {
     background-color: #004785;
 }
+
+/* Making a neat loader when stuff is happening 
+   on screen without importing Font Awesome */
+   
+.showbox {
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+.loader {
+    position: relative;
+    margin: 0 auto;
+    width: 30px;
+}
+
+.loader:before {
+    content: '';
+    display: block;
+}
+
+.circular {
+    animation: rotate 10s linear infinite;
+    transform-origin: center center;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 0px;
+}
+
+.path {
+    stroke-dasharray: 1, 200;
+    stroke-dashoffset: 0;
+    animation: dash 1.5s ease-in-out infinite, color 6s ease-in-out infinite;
+    stroke-linecap: round;
+}
+
+@keyframes rotate {
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes dash {
+    0% {
+        stroke-dasharray: 1, 200;
+        stroke-dashoffset: 0;
+    }
+    50% {
+        stroke-dasharray: 89, 200;
+        stroke-dashoffset: -35px;
+    }
+    100% {
+        stroke-dasharray: 89, 200;
+        stroke-dashoffset: -124px;
+    }
+}
+
+
+@keyframes color {
+    100%,
+    0% {
+        stroke: #004785;
+    }
+    40% {
+        stroke: #004785;
+    }
+    66% {
+        stroke: #004785;
+    }
+    80%,
+    90% {
+        stroke: #004785;
+    }
+}
