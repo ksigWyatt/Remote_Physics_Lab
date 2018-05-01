@@ -107,7 +107,7 @@
         //INIT
         var startTime, interval, elapsedTime, count, userIP, position, currentUserID;
         var failedCount, dvValue, maValue = 0;
-        var waiting, loading, beenReset, grantedAccess = false;
+        var waiting, loading, beenReset, grantedAccess, userExists = false;
 
         // Def. Voltage
         var defVoltageSlider = document.getElementById("volt-def-slider");
@@ -323,11 +323,15 @@
             loader.hidden = false;
             
             if (count == 0) {
-                postUserToDB();
+                if (!userExists)
+                    postUserToDB();
+
                 getUsersInQueue("http://127.0.0.1:5000/api/queue/", "request");
             }
             else {
-                postUserToDB();
+                if (!userExists)
+                    postUserToDB();
+                    
                 // wait 30 seconds and see if it's your turn
                 // TODO: Update users place in the queue every time this fires
 
