@@ -375,21 +375,25 @@
             }
 
             else {
-                queueText.innerHTML = "You are currently " + num + " in the queue.";
+                queueText.innerHTML = "You are currently " + num + " in the queue";
             }
         }
 
         function updateQueueField(num) {
 
-            // this is because the person at the beginning has access to the device
-            numberOfStudentsWaiting = num - 1;
-
-            if (numberOfStudentsWaiting > 1)
-                queueText.innerHTML = numberOfStudentsWaiting + " students waiting";
-            else if (numberOfStudentsWaiting == 1) 
-                queueText.innerHTML = numberOfStudentsWaiting + " student waiting";
-            else if (numberOfStudentsWaiting == 0)
-                queueText.innerHTML = " No students waiting";
+            if (num == 0)
+                queueText.innerHTML = "Access device now";
+            else {
+                // this is because the person at the beginning has access to the device
+                numberOfStudentsWaiting = num - 1;
+                
+                if (numberOfStudentsWaiting > 1)
+                    queueText.innerHTML = numberOfStudentsWaiting + " students waiting";
+                else if (numberOfStudentsWaiting == 1) 
+                    queueText.innerHTML = numberOfStudentsWaiting + " student waiting";
+                else if (numberOfStudentsWaiting == 0)
+                    queueText.innerHTML = " No students waiting";
+            }
         }
 
         function beginTimer() {
