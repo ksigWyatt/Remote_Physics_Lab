@@ -105,7 +105,7 @@
 
     <script>
         //INIT
-        var startTime, interval, elapsedTime, count, userIP, position, currentUserID;
+        var startTime, interval, elapsedTime, count, userIP, position, currentUserID, numberOfStudentsWaiting;
         var failedCount, dvValue, maValue = 0;
         var waiting, loading, beenReset, grantedAccess, userExists = false;
 
@@ -147,9 +147,9 @@
             getUsersInQueue("http://127.0.0.1:5000/api/queue/", "init");
 
             // Refresh every 30 seconds the text for the number of users in the queue
-            // assuming that you currently have no access
+            // assuming that you currently have no access and are not waiting for it
             setInterval(function () {
-                if (!grantedAccess)
+                if (!waiting && !grantedAccess)
                     getUsersInQueue("http://127.0.0.1:5000/api/queue/", "init");
             }, 30000);
             getUserIP();
@@ -333,11 +333,10 @@
                     postUserToDB();
                     
                 // wait 30 seconds and see if it's your turn
-                // TODO: Update users place in the queue every time this fires
-
                 if (!grantedAccess) {
                     setInterval(function () {
-                        getUsersInQueue("http://127.0.0.1:5000/api/queue/", "request");
+                        if (waiting)
+                            getUsersInQueue("http://127.0.0.1:5000/api/queue/", "request");
                     }, 30000);
                 }
             }
@@ -382,11 +381,14 @@
 
         function updateQueueField(num) {
 
-            if (num > 1)
-                queueText.innerHTML = num + " students waiting";
-            else if (num == 1) 
-                queueText.innerHTML = num + " student waiting";
-            else if (num == 0)
+            // this is because the person at the beginning has access to the device
+            numberOfStudentsWaiting = num - 1;
+
+            if (numberOfStudentsWaiting > 1)
+                queueText.innerHTML = numberOfStudentsWaiting + " students waiting";
+            else if (numberOfStudentsWaiting == 1) 
+                queueText.innerHTML = numberOfStudentsWaiting + " student waiting";
+            else if (numberOfStudentsWaiting == 0)
                 queueText.innerHTML = " No students waiting";
         }
 
