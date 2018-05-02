@@ -40,6 +40,9 @@ INSTALLED_APPS = [
     'RPL',
     'corsheaders',
     # 'django_nose', # enable this for code coverage
+    
+    # pip install schedule # install this for deleting 
+    # the user with access after 5 min
 ]
 
 # # Use nose to run all tests
