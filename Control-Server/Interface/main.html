@@ -52,7 +52,6 @@
         <p id="alert-message"></p>
         <div class="centered">
             <button id="reset-button" class="button">Reset</button>
-            
         </div>
         
         <div class="two-row">
@@ -397,6 +396,11 @@
                 grantAccessToUser();
             }
             else {
+
+                // sets the same thing -- if the user refreshed while in the queue
+                waiting = true;
+                loader.hidden = false;
+
                 if (num == 1)
                     queueText.innerHTML = "You are next in the queue";
                 else {
