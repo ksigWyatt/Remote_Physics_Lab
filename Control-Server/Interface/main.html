@@ -44,7 +44,7 @@
 
         <p id="queue"></p>
         <p><span id="timer"></span></p>
-
+        <!-- TODO: Add a cancel button for if the user changes their mind -->
         <br />
         <br />
 
@@ -400,7 +400,7 @@
                 if (num == 1)
                     queueText.innerHTML = "You are next in the queue";
                 else {
-                    queueText.innerHTML = "You are currently " + num + " in the queue. \n(" + (num * 5) + " min)";
+                    queueText.innerHTML = "You are currently " + num + " in the queue. <br /> (" + (num * 5) + " mins)";
                 }
             }
         }
