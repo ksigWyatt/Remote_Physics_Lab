@@ -388,7 +388,6 @@
             })
             .then(function(res) { 
                 loading = false;
-                console.log("\nPOST user responded with " + res.status);
             })
         }
 
@@ -456,7 +455,6 @@
             for (var id = 1; id < 6; id ++) {
                 
                 var url = "http://127.0.0.1:5000/api/variables/" + id + "/";
-                console.log(id);
                 
                 if (id == 1) {
 
@@ -472,7 +470,6 @@
                     })
                     .then(function(res) { 
                         loading = false;
-                        console.log("\nReset for /1/ responded with " + res.status);
                     })
                 }
                 else if (id == 3) {
@@ -489,7 +486,6 @@
                     })
                     .then(function(res) { 
                         loading = false;
-                        console.log("\nReset for /3/ responded with " + res.status);
                     })
                 }
                 else {
@@ -503,7 +499,6 @@
                     })
                     .then(function(res) { 
                         loading = false;
-                        console.log("\nReset responded with " + res.status);
                     })
                 }
             }
@@ -570,7 +565,6 @@
                         })
                         .then(function(res) { 
                             loading = false;
-                            console.log("current responded with " + res.status);
                         })
                     }
                     else {
@@ -584,7 +578,6 @@
                         })
                         .then(function(res) { 
                             loading = false;
-                            console.log(variable + " responded with " + res.status);
                         })
                     }
                 }
@@ -662,7 +655,6 @@
                     },
                     credentials: "same-origin"
                 }).then(function(response) {
-                    console.log("Delete the current user responded with " + response.status);
                     userExists = false;
                 }).catch(function(error) {
                     alert("An error occurred");
