@@ -44,7 +44,7 @@
 
         <p id="queue"></p>
         <p><span id="timer"></span></p>
-
+        <!-- TODO: Add a cancel button for if the user changes their mind -->
         <br />
         <br />
 
@@ -52,7 +52,6 @@
         <p id="alert-message"></p>
         <div class="centered">
             <button id="reset-button" class="button">Reset</button>
-            
         </div>
         
         <div class="two-row">
@@ -71,7 +70,6 @@
                 <div class="slidecontainer">
                     <input id="volt-def-slider" type="range" min="50" max="250" step="1" value="0" class="slider">
                     <p id="volt-def-value"></p>
-                    <p id="volt-selected-value">value of voltage button</p>
                 </div>
 
                 <br />
@@ -89,7 +87,6 @@
                 <div class="slidecontainer">
                     <input id="curr-slider" type="range" min="0" value="0" max="3" step="0.05" class="slider">
                     <p id="curr-value"></p>
-                    <p id="curr-selected-value">value of current button</p>
                 </div>
                 <br />
                 <br />
@@ -105,9 +102,10 @@
 
     <script>
         //INIT
-        var startTime, interval, elapsedTime, count, userIP, position, currentUserID;
+        var startTime, interval, elapsedTime, count, userIP; 
+        var currentUserID, numberOfStudentsWaiting, waitingTimer, accessTimer;
         var failedCount, dvValue, maValue = 0;
-        var waiting, loading, beenReset, grantedAccess = false;
+        var waiting, loading, beenReset, grantedAccess, userExists = false;
 
         // Def. Voltage
         var defVoltageSlider = document.getElementById("volt-def-slider");
@@ -143,17 +141,27 @@
         function init() {
 
             loader.hidden = true; 
-
-            getUsersInQueue("http://127.0.0.1:5000/api/queue/", "init");
-
-            // Refresh every 30 seconds the text for the number of users in the queue
-            // assuming that you currently have no access
-            setInterval(function () {
-                if (!grantedAccess)
-                    getUsersInQueue("http://127.0.0.1:5000/api/queue/", "init");
-            }, 30000);
             getUserIP();
+            
+            // 400 ms to ping the remote server and access the user's IP
+            setTimeout(function() {
+
+                if (userIP != null)
+                    setForViewing();
+                else {
+                    alert("An error ocurred");
+                    console.log("Failed to capture user's location for caching.");
+                }
+            }, 400);
         }
+
+        // attempt to remove the user's information from the DB prior to them leaving
+        // however this is not possible with some browsers as it violates privacy
+        // polices of several browsers - the only action alowed is to create a dialogue
+        // For more see: https://goo.gl/S8jS2Q
+        /* window.onbeforeunload = function() {
+            return "Are you sure?";
+        } */
 
         // SLIDERS
         // def. voltage
@@ -234,13 +242,15 @@
         reset.onclick = function() {
 
             if (grantedAccess) {
-                if (defVoltageSlider.value != 50 || accVoltageSlider.value != 0 || currentSlider != 0) {
+                if (defVoltageSlider.valueAsNumber != 50 || 
+                    accVoltageSlider.valueAsNumber != 0 || 
+                    currentSlider.valueAsNumber != 0) {
 
                     // Update API to reflect resets
                     sendPUTForReset();
                 }
                 else {
-                    console.log("Already Reset");
+                    alert("Already Reset");
                 }
             }
             else {
@@ -317,25 +327,40 @@
 
         // FUNCS & API
 
+        function setForViewing() {
+
+            // make the request first
+            getUsersInQueue("http://127.0.0.1:5000/api/queue/", "init");
+
+            // Refresh every 30 seconds the text for the number of users in the queue
+            // assuming that you currently have no access and are not waiting for it
+            var viewing = setInterval(function () {
+                if (!waiting && !grantedAccess)
+                    getUsersInQueue("http://127.0.0.1:5000/api/queue/", "init");
+
+                else if (!userExists && !grantedAccess) {
+                    addUserToQueue();
+                }
+                else {
+                    clearInterval(viewing);
+                }
+            }, 30000);
+        }
+
         function addUserToQueue(place) {
 
             waiting = true;
             loader.hidden = false;
             
-            if (count == 0) {
+            if (!userExists)
                 postUserToDB();
-                getUsersInQueue("http://127.0.0.1:5000/api/queue/", "request");
-            }
-            else {
-                postUserToDB();
-                // wait 30 seconds and see if it's your turn
-                // TODO: Update users place in the queue every time this fires
 
-                if (!grantedAccess) {
-                    setInterval(function () {
+            if (!grantedAccess) {
+                // wait 30 seconds and see if it's your turn
+                waitingTimer = setInterval(function () {
+                    if (waiting)
                         getUsersInQueue("http://127.0.0.1:5000/api/queue/", "request");
-                    }, 30000);
-                }
+                }, 30000);
             }
         }
 
@@ -361,7 +386,6 @@
             })
             .then(function(res) { 
                 loading = false;
-                console.log("\nPOST user responded with " + res.status);
             })
         }
 
@@ -370,25 +394,40 @@
             if (num == 0) {
                 grantAccessToUser();
             }
-
             else {
-                queueText.innerHTML = "You are currently " + num + " in the queue.";
+
+                // sets the same thing -- if the user refreshed while in the queue
+                waiting = true;
+                loader.hidden = false;
+
+                if (num == 1)
+                    queueText.innerHTML = "You are next in the queue";
+                else {
+                    queueText.innerHTML = "You are currently " + num + " in the queue. <br /> (" + (num * 5) + " mins)";
+                }
             }
         }
 
         function updateQueueField(num) {
 
-            if (num > 1)
-                queueText.innerHTML = num + " students waiting";
-            else if (num == 1) 
-                queueText.innerHTML = num + " student waiting";
-            else if (num == 0)
-                queueText.innerHTML = " No students waiting";
+            if (num == 0)
+                queueText.innerHTML = "Access device now";
+            else {
+                // this is because the person at the beginning has access to the device
+                numberOfStudentsWaiting = num - 1;
+                
+                if (numberOfStudentsWaiting > 1)
+                    queueText.innerHTML = numberOfStudentsWaiting + " students waiting";
+                else if (numberOfStudentsWaiting == 1) 
+                    queueText.innerHTML = numberOfStudentsWaiting + " student waiting";
+                else if (numberOfStudentsWaiting == 0)
+                    queueText.innerHTML = "No students waiting";
+            }
         }
 
         function beginTimer() {
             startTime = Date.now();
-            interval = setInterval(function(){
+            interval = setInterval(function() {
                 updateDisplay(Date.now() - startTime);
             });
         }
@@ -419,7 +458,6 @@
             for (var id = 1; id < 6; id ++) {
                 
                 var url = "http://127.0.0.1:5000/api/variables/" + id + "/";
-                console.log(id);
                 
                 if (id == 1) {
 
@@ -435,7 +473,6 @@
                     })
                     .then(function(res) { 
                         loading = false;
-                        console.log("\nReset for /1/ responded with " + res.status);
                     })
                 }
                 else if (id == 3) {
@@ -452,7 +489,6 @@
                     })
                     .then(function(res) { 
                         loading = false;
-                        console.log("\nReset for /3/ responded with " + res.status);
                     })
                 }
                 else {
@@ -466,7 +502,6 @@
                     })
                     .then(function(res) { 
                         loading = false;
-                        console.log("\nReset responded with " + res.status);
                     })
                 }
             }
@@ -494,10 +529,6 @@
 
                     case "deflectingv":
                         id = 1;
-                        break;
-
-                    case "accelv":
-                        id = 2;
                         break;
 
                     case "current":
@@ -533,7 +564,6 @@
                         })
                         .then(function(res) { 
                             loading = false;
-                            console.log("current responded with " + res.status);
                         })
                     }
                     else {
@@ -547,7 +577,6 @@
                         })
                         .then(function(res) { 
                             loading = false;
-                            console.log(variable + " responded with " + res.status);
                         })
                     }
                 }
@@ -562,7 +591,7 @@
         }
 
          function getUsersInQueue(url, sender) {
-            
+            var position;
             count = 0;
             fetch(url, {
                 method: "GET",
@@ -579,17 +608,14 @@
                     if (userIP == data.objects[i].ip) {
                         position = i
                         currentUserID = data.objects[i].id
+                        userExists = true;
                     }
                 }
                 
-                if (sender == "request") {
-                    if (position != null) {
-                       
-                        // TODO: Make sure that this number makes sense 
-                        afterRequestedCount(position);
-                    }
-                } 
-                else {
+                if (count > 0 && position != null) {
+                    afterRequestedCount(position);
+                }
+                else if (sender == "init") {
                     updateQueueField(count);
                 }
 
@@ -628,7 +654,7 @@
                     },
                     credentials: "same-origin"
                 }).then(function(response) {
-                    console.log("Delete the current user responded with " + response.status);
+                    userExists = false;
                 }).catch(function(error) {
                     alert("An error occurred");
                     console.log(error);
@@ -637,17 +663,24 @@
         }
 
         function resetAfterRevokingAccess() {
-            sendPUTForReset(); 
-            deleteUserFromQueue(); 
-            queueText.innerHTML = "Your time is up."
+            clearTimeout(accessTimer);
+            sendPUTForReset();
+            setTimeout(function() {
+                deleteUserFromQueue(); 
+            }, 100);
+            queueText.innerHTML = "";
             requestAccess.innerHTML = "Request Access";
             counter.hidden = true;
-            grantedAccess = false; 
-            getUsersInQueue("http://127.0.0.1:5000/api/queue/", "init");
+            grantedAccess = false;
+            // wait 300 ms first
+            setTimeout(function() {
+                setForViewing();
+            }, 300)
         }
 
         function grantAccessToUser() {
             loader.hidden = true;
+            clearInterval(waitingTimer); // stop running to lookup
             // Make sure any changes the user attempted to make are undone first
             sendPUTForReset();
             grantedAccess = true;
@@ -674,7 +707,7 @@
 
         function countdown(minutes) {
         var seconds = 60;
-        var mins = minutes
+        var mins = minutes;
         
         function tick() {
             
@@ -683,7 +716,7 @@
             counter.innerHTML = current_minutes.toString() + ":"
             + (seconds < 10 ? "0" : "") + String(seconds);
             if( seconds > 0 ) {
-                setTimeout(tick, 1000);
+                accessTimer = setTimeout(tick, 1000);
             }
             else {
                 if(mins > 1) {
@@ -691,6 +724,7 @@
                 }
                 if (current_minutes == 0 && seconds == 0) {
                     resetAfterRevokingAccess();
+                    clearTimeout(accessTimer);
                 }
             }
         }
