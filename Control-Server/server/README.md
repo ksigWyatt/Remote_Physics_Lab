@@ -3,10 +3,6 @@ We are using Django `1.11.11`. The current version of Django uses several differ
 
 ## DB Mockup
 Please see the image below as a mockup of the SQLite DB.
-![Database-Mock](https://i.imgur.com/iFVBwH5.png)
-![Variables-Table](https://i.imgur.com/mLATD1o.png)
-![Users-Table](https://i.imgur.com/nv4bc7O.png)
-
 
 ## All Endpoints
 *All are PUT/POST requests as the purpose of this application is to interact with a device, by sending it commands*
@@ -38,3 +34,6 @@ Maps to *ip*(string) and *place*(int)
 - django-cors-headers - *Auth Headers for RESTful requests*
 - pip install django-nose - *Coverage Reports*
 - pip install coverage - *Code Coverage*
+
+## Note
+Please note that the URL for containing the IP for the server for the API will be different in PROD. It is set to localhost so that it can be easily tested on your machine. If we were to redo this I would include the queue logic within the API or the server itself instead of trusting that the client itself can host it within the browser.
