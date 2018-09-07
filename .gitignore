@@ -134,3 +134,19 @@ ENV/
 *.exe
 *.out
 *.app
+
+# MacOS
+*.DS_Store
+
+# Notes
+*.txt
+
+# IDE Independent
+**/.idea/
+**/.vscode/
+
+# Others
+remote-physics-lab/README\.md
+**/node_modules/
+*.sqlite3
+**/migrations/

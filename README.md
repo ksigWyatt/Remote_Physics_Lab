@@ -18,3 +18,8 @@ The Software will be comprised of 3 major parts
 
 ### Other Sponsors
 - USAF Academy in Colorodo Springs, CO
+
+## Testing
+- TastyPie Test & DjangoTest for Unit Testing the API
+
+*Running API Tests* - run `python manage.py test RPL/tests`

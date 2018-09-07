@@ -1,0 +1,745 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Welcome to the Remote Physics Lab</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/core.js"></script>
+    <link rel="stylesheet" href="main.css">
+    <link href="https://fonts.googleapis.com/css?family=Muli" rel="stylesheet">
+</head>
+<body onload="init()">
+    <h2>Remote Physics Lab</h2>
+    
+    <br />
+
+    <!-- Video Feed -->
+    <div class="row">
+        <div class="column left1"></div>
+        <div class="column middle1">
+            <div id="video-feed" class="video">
+                <p><iframe width="1024" height="576" src="https://www.youtube.com/embed/qrdHXFIoe_o?&amp;showinfo=0" frameBorder="0" allow="autoplay; encrypted-media"></iframe></p>
+                <h3>Live Video</h3>
+            </div>
+        </div>
+        <div class="column right1"></div>
+    </div>
+
+    <br />
+    <br />
+    <br />
+
+    <!-- Controls -->
+    <div id="controls" class="row">
+        <hr>
+        <br />
+        <button id="request-access" class="button">Request Access</button>
+        <div class="showbox">
+            <div id="loader" class="loader">
+                <svg class="circular" viewBox="25 25 50 50">
+                <circle class="path" cx="50" cy="50" r="20" fill="none" stroke-width="2" stroke-miterlimit="10"/>
+                </svg>
+            </div>
+        </div>
+
+        <p id="queue"></p>
+        <p><span id="timer"></span></p>
+        <!-- TODO: Add a cancel button for if the user changes their mind -->
+        <br />
+        <br />
+
+        <h3>Controls</h3>
+        <p id="alert-message"></p>
+        <div class="centered">
+            <button id="reset-button" class="button">Reset</button>
+        </div>
+        
+        <div class="two-row">
+            <div class="two-column">
+                <h4>Accelerating Voltage</h4>
+
+                <div class="slidecontainer">
+                    <input id="volt-acc-slider" type="range" min="0" max="250" step="1" value="0" class="slider">
+                    <p id="volt-acc-value"></p>
+                </div>
+
+                <br />
+                <br />
+
+                <h4>Deflecting Voltage</h4>
+                <div class="slidecontainer">
+                    <input id="volt-def-slider" type="range" min="50" max="250" step="1" value="0" class="slider">
+                    <p id="volt-def-value"></p>
+                </div>
+
+                <br />
+                <br />
+
+                <div class="btn-group">
+                    <button id="dv-pos" class="button-stack1">Positive</button>
+                    <button id="dv-off" class="button-stack1">Off</button>
+                    <button id="dv-neg" class="button-stack1">Negative</button>
+                </div>
+            </div>
+            <div class="two-column">
+                <h4>Magnetizing Current</h4>
+
+                <div class="slidecontainer">
+                    <input id="curr-slider" type="range" min="0" value="0" max="3" step="0.05" class="slider">
+                    <p id="curr-value"></p>
+                </div>
+                <br />
+                <br />
+                <h5 style="text-align: right;">Magnetic Arc</h5>
+                <div class="btn-group">                
+                    <button id="mag-ccw" class="button-stack2">Counter CW</button>
+                    <button id="mag-off" class="button-stack2">Off</button>
+                    <button id="mag-cw" class="button-stack2">Clockwise</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        //INIT
+        var startTime, interval, elapsedTime, count, userIP; 
+        var currentUserID, numberOfStudentsWaiting, waitingTimer, accessTimer;
+        var failedCount, dvValue, maValue = 0;
+        var waiting, loading, beenReset, grantedAccess, userExists = false;
+
+        // Def. Voltage
+        var defVoltageSlider = document.getElementById("volt-def-slider");
+        var defVoltageValue = document.getElementById("volt-def-value");
+        defVoltageValue.innerHTML = defVoltageSlider.value + " V";
+
+        // Acc. Voltage
+        var accVoltageSlider = document.getElementById("volt-acc-slider");
+        var accVoltageValue = document.getElementById("volt-acc-value");
+        accVoltageValue.innerHTML = accVoltageSlider.value + " V";
+
+        // Current
+        var currentSlider = document.getElementById("curr-slider");
+        var currentValue = document.getElementById("curr-value");
+        currentValue.innerHTML = currentSlider.value + " A";
+
+        // Buttons
+        var requestAccess = document.getElementById("request-access");
+        var reset = document.getElementById("reset-button");
+        var dvPos = document.getElementById("dv-pos");
+        var dvOff = document.getElementById("dv-off");
+        var dvNeg = document.getElementById("dv-neg");
+        var magCW = document.getElementById("mag-cw");
+        var magOff = document.getElementById("mag-off");
+        var magCCW = document.getElementById("mag-ccw");
+
+        // Labels
+        var queueText = document.getElementById("queue");
+        var loader = document.getElementById("loader");
+        var counter = document.getElementById("timer");
+        
+        // MARK: INIT
+        function init() {
+
+            loader.hidden = true; 
+            getUserIP();
+            
+            // 400 ms to ping the remote server and access the user's IP
+            setTimeout(function() {
+
+                if (userIP != null)
+                    setForViewing();
+                else {
+                    alert("An error ocurred");
+                    console.log("Failed to capture user's location for caching.");
+                }
+            }, 400);
+        }
+
+        // attempt to remove the user's information from the DB prior to them leaving
+        // however this is not possible with some browsers as it violates privacy
+        // polices of several browsers - the only action alowed is to create a dialogue
+        // For more see: https://goo.gl/S8jS2Q
+        /* window.onbeforeunload = function() {
+            return "Are you sure?";
+        } */
+
+        // SLIDERS
+        // def. voltage
+        defVoltageSlider.oninput = function() {
+            defVoltageValue.innerHTML = this.value + " V";
+        }
+
+         // acc. voltage
+         accVoltageSlider.oninput = function() {
+            accVoltageValue.innerHTML = this.value + " V";
+        }
+
+        // current moved
+        currentSlider.oninput = function() {
+            currentValue.innerHTML = this.value + " A";
+        }
+
+        // Make API calls for sliders
+        defVoltageSlider.onchange = function() {
+
+            beginTimer();
+
+            if (elapsedTime < 199) {
+                failedCount++;
+
+                if (failedCount > 5) {
+                    alert("Please allow time for requests to be sent. Making changes rapidly could damage the device.");
+                    failedCount = 0;
+                }
+            }
+            else {
+                if (this.value <= 250 && this.value >= 50) {
+                    sendPUTforVars(this.value, "deflectingv");
+                }
+            }
+        }
+
+        accVoltageSlider.onchange = function() {
+
+            beginTimer()
+
+            if (elapsedTime < 199) {
+                failedCount++;
+
+                if (failedCount > 5) {
+                    alert("Please allow time for requests to be sent. Making changes rapidly could damage the device.");
+                    failedCount = 0;
+                }
+            }
+            else {
+                if (this.value <= 250 && this.value >= 0) {
+                    sendPUTforVars(this.value, "accelv");
+                }
+            }
+        }
+
+        currentSlider.onchange = function() {
+
+            beginTimer()
+
+            if (elapsedTime < 199) {
+                failedCount++;
+
+                if (failedCount > 5) {
+                    alert("Please allow time for requests to be sent. Making changes rapidly could damage the device.");
+                    failedCount = 0;
+                }
+            }
+            else {
+                if (this.value <= 3 && this.value >= 0) {
+                    sendPUTforVars(this.value, "current");
+                }
+            }
+        }
+
+        // CLICKED BUTTONS
+
+        reset.onclick = function() {
+
+            if (grantedAccess) {
+                if (defVoltageSlider.valueAsNumber != 50 || 
+                    accVoltageSlider.valueAsNumber != 0 || 
+                    currentSlider.valueAsNumber != 0) {
+
+                    // Update API to reflect resets
+                    sendPUTForReset();
+                }
+                else {
+                    alert("Already Reset");
+                }
+            }
+            else {
+                alert("You do not currently have access.");
+            }
+        }
+
+        // SWITCHES
+        // Note: 0 is off, 1 is positive / CW, and 2 is negative / CCW
+
+        // Deflecting
+        dvPos.onclick = function() {
+            if (dvValue != 1) {
+                sendPUTforVars(1, "deflectingswitch");
+                dvValue = 1;
+            }  
+        }
+
+        dvOff.onclick = function() {
+            if (dvValue != 0) {
+                sendPUTforVars(0, "deflectingswitch");
+                dvValue = 0;
+            }
+        }
+
+        dvNeg.onclick = function() {
+            if (dvValue != 2) {
+                sendPUTforVars(2, "deflectingswitch");
+                dvValue = 2;
+            }
+        }
+
+        // Magnetic Arc
+        magCW.onclick = function() {
+            if (maValue != 1) {
+                sendPUTforVars(1, "magneticarc");
+                maValue = 1;
+            }  
+        }
+
+        magOff.onclick = function() {
+            if (maValue != 0) {
+                sendPUTforVars(0, "magneticarc");
+                maValue = 0;
+            }
+        }
+
+        magCCW.onclick = function() {
+            if (maValue != 2) {
+                sendPUTforVars(2, "magneticarc");
+                maValue = 2;
+            }
+        }
+        
+        requestAccess.onclick = function() {
+
+            if (!waiting && !grantedAccess) {
+                addUserToQueue();
+
+                // wait 300ms for the post to go through
+                setTimeout(function () {
+                    getUsersInQueue("http://127.0.0.1:5000/api/queue/", "request");
+                }, 300);
+            }
+            else if (waiting) {
+                alert("You are already in the queue");
+            }
+
+            // Forfeiting Access
+            if (grantedAccess) {
+               resetAfterRevokingAccess();
+            }
+        }
+
+        // FUNCS & API
+
+        function setForViewing() {
+
+            // make the request first
+            getUsersInQueue("http://127.0.0.1:5000/api/queue/", "init");
+
+            // Refresh every 30 seconds the text for the number of users in the queue
+            // assuming that you currently have no access and are not waiting for it
+            var viewing = setInterval(function () {
+                if (!waiting && !grantedAccess)
+                    getUsersInQueue("http://127.0.0.1:5000/api/queue/", "init");
+
+                else if (!userExists && !grantedAccess) {
+                    addUserToQueue();
+                }
+                else {
+                    clearInterval(viewing);
+                }
+            }, 30000);
+        }
+
+        function addUserToQueue(place) {
+
+            waiting = true;
+            loader.hidden = false;
+            
+            if (!userExists)
+                postUserToDB();
+
+            if (!grantedAccess) {
+                // wait 30 seconds and see if it's your turn
+                waitingTimer = setInterval(function () {
+                    if (waiting)
+                        getUsersInQueue("http://127.0.0.1:5000/api/queue/", "request");
+                }, 30000);
+            }
+        }
+
+        function postUserToDB() {
+
+            count++;
+
+            var payload = {
+                ip: userIP,
+                place: count
+            };
+
+            var url = "http://127.0.0.1:5000/api/queue/";
+            var data = JSON.stringify(payload);
+
+            fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                credentials: "same-origin",
+                body: data
+            })
+            .then(function(res) { 
+                loading = false;
+            })
+        }
+
+        function afterRequestedCount(num) {
+
+            if (num == 0) {
+                grantAccessToUser();
+            }
+            else {
+
+                // sets the same thing -- if the user refreshed while in the queue
+                waiting = true;
+                loader.hidden = false;
+
+                if (num == 1)
+                    queueText.innerHTML = "You are next in the queue";
+                else {
+                    queueText.innerHTML = "You are currently " + num + " in the queue. <br /> (" + (num * 5) + " mins)";
+                }
+            }
+        }
+
+        function updateQueueField(num) {
+
+            if (num == 0)
+                queueText.innerHTML = "Access device now";
+            else {
+                // this is because the person at the beginning has access to the device
+                numberOfStudentsWaiting = num - 1;
+                
+                if (numberOfStudentsWaiting > 1)
+                    queueText.innerHTML = numberOfStudentsWaiting + " students waiting";
+                else if (numberOfStudentsWaiting == 1) 
+                    queueText.innerHTML = numberOfStudentsWaiting + " student waiting";
+                else if (numberOfStudentsWaiting == 0)
+                    queueText.innerHTML = "No students waiting";
+            }
+        }
+
+        function beginTimer() {
+            startTime = Date.now();
+            interval = setInterval(function() {
+                updateDisplay(Date.now() - startTime);
+            });
+        }
+
+        function sendPUTForReset() {
+
+            defVoltageSlider.value = 50;
+            defVoltageValue.innerHTML = 50 + " V";
+            accVoltageSlider.value = 0;
+            accVoltageValue.innerHTML = 0 + " V";
+            currentSlider.value = 0;
+            currentValue.innerHTML = 0 + " A";
+
+            var payload = {
+                values_used: 0
+            };
+
+            var defVoltPayload = {
+                values_used: 50
+            };
+
+            var currentPayload = {
+                values_used: 0
+            }; 
+
+            var data = JSON.stringify(payload);
+
+            for (var id = 1; id < 6; id ++) {
+                
+                var url = "http://127.0.0.1:5000/api/variables/" + id + "/";
+                
+                if (id == 1) {
+
+                    var defVoltData = JSON.stringify(defVoltPayload);
+
+                    fetch(url, {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        credentials: "same-origin",
+                        body: defVoltData
+                    })
+                    .then(function(res) { 
+                        loading = false;
+                    })
+                }
+                else if (id == 3) {
+
+                    var currentData = JSON.stringify(currentPayload);
+
+                    fetch(url, {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        credentials: "same-origin",
+                        body: currentData
+                    })
+                    .then(function(res) { 
+                        loading = false;
+                    })
+                }
+                else {
+                    fetch(url, {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        credentials: "same-origin",
+                        body: data
+                    })
+                    .then(function(res) { 
+                        loading = false;
+                    })
+                }
+            }
+        }
+        
+        function sendPUTforVars(postValue, variable) {
+
+            if (grantedAccess) {
+
+                var id = 0;
+                
+                var payload = {
+                    values_used: parseInt(postValue)
+                };
+                
+                // Using factor of 100 so that we can ensure that this is of int type
+                var currentPayload = {
+                    values_used: (postValue * 100) 
+                };
+                
+                switch (variable) {
+                    case "accelv":
+                        id = 2;
+                        break;
+
+                    case "deflectingv":
+                        id = 1;
+                        break;
+
+                    case "current":
+                        id = 3;
+                        break;
+
+                    case "magneticarc":
+                        id = 4;
+                        break;
+
+                    case "deflectingswitch":
+                        id = 5;
+                        break;
+
+                    default:
+                        break;
+                }
+
+                var data = JSON.stringify(payload);
+                var url = "http://127.0.0.1:5000/api/variables/" + id + "/";
+                
+                if (!loading) {
+                    if (id == 3) {
+                        var currentData = JSON.stringify(currentPayload);
+
+                        fetch(url, {
+                            method: "PUT",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            credentials: "same-origin",
+                            body: currentData
+                        })
+                        .then(function(res) { 
+                            loading = false;
+                        })
+                    }
+                    else {
+                        fetch(url, {
+                            method: "PUT",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            credentials: "same-origin",
+                            body: data
+                        })
+                        .then(function(res) { 
+                            loading = false;
+                        })
+                    }
+                }
+                else {
+                    console.log("Unable to perform selected action for " + variable);
+                }
+                loading = true;
+            }
+            else {
+                alert("You do not currently have access.");
+            }
+        }
+
+         function getUsersInQueue(url, sender) {
+            var position;
+            count = 0;
+            fetch(url, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                credentials: "same-origin"
+            }).then(function(response) { return response.json(); })
+              .then(function(data) {
+                  
+                for (var i = 0; i < data.objects.length; i++) {
+                    count++;
+
+                    if (userIP == data.objects[i].ip) {
+                        position = i
+                        currentUserID = data.objects[i].id
+                        userExists = true;
+                    }
+                }
+                
+                if (count > 0 && position != null) {
+                    afterRequestedCount(position);
+                }
+                else if (sender == "init") {
+                    updateQueueField(count);
+                }
+
+            }).catch(function(error) {
+                alert("An error occurred");
+                console.log(error);
+            });
+        }
+
+        function getUserIP() {
+
+            fetch("http://api.db-ip.com/v2/free/self", {
+                method: "GET"
+            }).then(function(response) { return response.json(); })
+              .then(function(data) {
+                
+                if (data.ipAddress) {
+                    userIP = data.ipAddress;
+                }
+
+            }).catch(function(error) {
+                alert("An error occurred");
+                console.log(error);
+            });
+        }
+
+        function deleteUserFromQueue() {
+
+            if (currentUserID) {
+
+                var url = "http://127.0.0.1:5000/api/queue/" + currentUserID +"/"
+                fetch(url, {
+                    method: "DELETE",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    credentials: "same-origin"
+                }).then(function(response) {
+                    userExists = false;
+                }).catch(function(error) {
+                    alert("An error occurred");
+                    console.log(error);
+                });
+            }  
+        }
+
+        function resetAfterRevokingAccess() {
+            clearTimeout(accessTimer);
+            sendPUTForReset();
+            setTimeout(function() {
+                deleteUserFromQueue(); 
+            }, 100);
+            queueText.innerHTML = "";
+            requestAccess.innerHTML = "Request Access";
+            counter.hidden = true;
+            grantedAccess = false;
+            // wait 300 ms first
+            setTimeout(function() {
+                setForViewing();
+            }, 300)
+        }
+
+        function grantAccessToUser() {
+            loader.hidden = true;
+            clearInterval(waitingTimer); // stop running to lookup
+            // Make sure any changes the user attempted to make are undone first
+            sendPUTForReset();
+            grantedAccess = true;
+            waiting = false;
+            requestAccess.innerHTML = "Forfeit Access";
+            queueText.innerHTML = "You now have access.";
+            counter.hidden = false;
+            countdown(5);
+        }
+
+        function updateDisplay(currentTime) {
+
+            elapsedTime = currentTime;
+
+            // Limit the user to send requests only every 200 ms w/ 3ms buffer
+            if (currentTime > 202) {
+                stopTimer();
+            }
+        }
+
+        function stopTimer() {
+            clearInterval(interval);
+        }
+
+        function countdown(minutes) {
+        var seconds = 60;
+        var mins = minutes;
+        
+        function tick() {
+            
+            var current_minutes = mins-1;
+            seconds--;
+            counter.innerHTML = current_minutes.toString() + ":"
+            + (seconds < 10 ? "0" : "") + String(seconds);
+            if( seconds > 0 ) {
+                accessTimer = setTimeout(tick, 1000);
+            }
+            else {
+                if(mins > 1) {
+                    countdown(mins-1);           
+                }
+                if (current_minutes == 0 && seconds == 0) {
+                    resetAfterRevokingAccess();
+                    clearTimeout(accessTimer);
+                }
+            }
+        }
+        tick();
+    }
+
+    function checkSecond(sec) {
+        if (sec < 10 && sec >= 0) {
+            sec = "0" + sec
+        }; // add zero in front of numbers if < 10
+        if (sec < 0) {
+            sec = "59"
+        };
+        return sec;
+    }
+    </script>
+</body>
+</html>
