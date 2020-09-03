@@ -1,6 +1,8 @@
 # Remote Physics Lab
 _Senior Development Project_
 
+[Watch the demo](https://www.youtube.com/watch?v=CDGdek3r0kM)
+
 ## About This Project 
 This project is meant to help explore the possibilities of creating a fully remote lab experience for students at FGCU. Several professors at the university are invested and involved with the development of this service. This project is meant to act as a proof-of-concept for both the Physics department as well as other departments on campus who might benefit from a fully remote lab experience. 
 This project is aimed at addressing the concern of university leaders for that of class sizes, and the number of classes required to meet each week in order for the university to adhere to the size requirements. With a remote system, students can complete their assignments in a timely fashion, instructors can lecture other students during that time that they would otherwise be attending to a lab section, and classrooms can be booked only for instruction. This is a great opportunity, as the number of available classrooms on campus continue to decline, and as new students attend the university each semester. In effect nearly doubling the effective capacity of the department. 
